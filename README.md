@@ -4,13 +4,13 @@ Sistema para cálculo, conferência e auditoria de tributos, com foco inicial em
 
 O projeto nasceu com o objetivo de permitir que empresários compreendam não apenas **quanto estão pagando**, mas também:
 
-* qual regra tributária foi aplicada;
-* por que determinada atividade entrou em determinado anexo;
-* qual faixa de tributação foi utilizada;
-* como a alíquota foi calculada;
-* quais dados participaram do cálculo;
-* qual base normativa foi utilizada;
-* se existem possíveis divergências entre o cálculo esperado e a guia emitida.
+- qual regra tributária foi aplicada;
+- por que determinada atividade entrou em determinado anexo;
+- qual faixa de tributação foi utilizada;
+- como a alíquota foi calculada;
+- quais dados participaram do cálculo;
+- qual base normativa foi utilizada;
+- se existem possíveis divergências entre o cálculo esperado e a guia emitida.
 
 > **Princípio central do projeto: calcular + explicar + rastrear.**
 
@@ -39,13 +39,13 @@ Sua função inicial é atuar como uma ferramenta de **conferência, transparên
 
 ## Backend
 
-* Java 21
-* Spring Boot
-* Maven Wrapper
-* JUnit
-* API REST futuramente
-* PostgreSQL futuramente
-* Flyway futuramente
+- Java 21
+- Spring Boot
+- Maven Wrapper
+- JUnit
+- API REST futuramente
+- PostgreSQL futuramente
+- Flyway futuramente
 
 ## Frontend
 
@@ -53,9 +53,9 @@ Planejado para uma fase posterior.
 
 Possíveis tecnologias:
 
-* React
-* Next.js
-* TypeScript
+- React
+- Next.js
+- TypeScript
 
 ---
 
@@ -191,26 +191,26 @@ Isso permitirá recalcular corretamente competências antigas.
 
 ## FASE 0 — Fundação
 
-* [x] Criar estrutura do projeto
-* [x] Configurar Java
-* [x] Configurar Spring Boot
-* [x] Configurar Maven Wrapper
-* [x] Configurar Git
-* [x] Criar estrutura monorepo
-* [x] Executar primeiro build
-* [x] Criar primeiro commit
+- [x] Criar estrutura do projeto
+- [x] Configurar Java
+- [x] Configurar Spring Boot
+- [x] Configurar Maven Wrapper
+- [x] Configurar Git
+- [x] Criar estrutura monorepo
+- [x] Executar primeiro build
+- [x] Criar primeiro commit
 
 ---
 
 ## FASE 1 — Domínio tributário
 
-* [x] Criar `SimplesAnnex`
-* [x] Criar `FatorR`
-* [x] Criar `TaxDecision`
-* [x] Representar Anexo III
-* [x] Representar Anexo V
-* [x] Tratar Fator R com duas casas sem arredondamento
-* [x] Criar testes unitários
+- [x] Criar `SimplesAnnex`
+- [x] Criar `FatorR`
+- [x] Criar `TaxDecision`
+- [x] Representar Anexo III
+- [x] Representar Anexo V
+- [x] Tratar Fator R com duas casas sem arredondamento
+- [x] Criar testes unitários
 
 ---
 
@@ -218,33 +218,33 @@ Isso permitirá recalcular corretamente competências antigas.
 
 ### FASE 2.1 — Cálculo normal
 
-* [x] Criar `FatorRCalculator`
-* [x] Calcular FS12 / RBT12
-* [x] Tratar valores zerados
-* [x] Determinar Anexo III ou V
-* [x] Criar `FatorRCalculationResult`
-* [x] Gerar `TaxDecision`
-* [x] Criar testes
+- [x] Criar `FatorRCalculator`
+- [x] Calcular FS12 / RBT12
+- [x] Tratar valores zerados
+- [x] Determinar Anexo III ou V
+- [x] Criar `FatorRCalculationResult`
+- [x] Gerar `TaxDecision`
+- [x] Criar testes
 
 ### FASE 2.2 — Empresas novas
 
-* [x] Criar bases de cálculo diferentes
-* [x] Tratar mês de abertura
-* [x] Utilizar FSPA / RPA
-* [x] Tratar empresas com menos de 13 meses
-* [x] Registrar a base utilizada na decisão
-* [x] Criar testes
+- [x] Criar bases de cálculo diferentes
+- [x] Tratar mês de abertura
+- [x] Utilizar FSPA / RPA
+- [x] Tratar empresas com menos de 13 meses
+- [x] Registrar a base utilizada na decisão
+- [x] Criar testes
 
 ### FASE 2.3 — Seleção automática
 
-* [x] Criar `FatorRPeriodClassifier`
-* [x] Criar `FatorRCalculationRequest`
-* [x] Criar `FatorRAutomaticCalculator`
-* [x] Detectar mês de abertura
-* [x] Detectar empresa com menos de 13 meses
-* [x] Detectar cálculo normal
-* [x] Selecionar automaticamente a regra
-* [x] Criar testes
+- [x] Criar `FatorRPeriodClassifier`
+- [x] Criar `FatorRCalculationRequest`
+- [x] Criar `FatorRAutomaticCalculator`
+- [x] Detectar mês de abertura
+- [x] Detectar empresa com menos de 13 meses
+- [x] Detectar cálculo normal
+- [x] Selecionar automaticamente a regra
+- [x] Criar testes
 
 ---
 
@@ -252,47 +252,50 @@ Isso permitirá recalcular corretamente competências antigas.
 
 ## FASE 3.1 — Tabelas tributárias
 
-* [x] Modelar `SimplesTaxBracket`
-* [x] Modelar `SimplesTaxTable`
-* [x] Criar `SimplesTaxTableRegistry`
-* [x] Cadastrar Anexo III
-* [x] Cadastrar Anexo V
-* [x] Versionar tabelas
-* [x] Validar limites das faixas
-* [x] Criar testes para os valores das tabelas
+- [x] Modelar `SimplesTaxBracket`
+- [x] Modelar `SimplesTaxTable`
+- [x] Criar `SimplesTaxTableRegistry`
+- [x] Cadastrar Anexo III
+- [x] Cadastrar Anexo V
+- [x] Versionar tabelas
+- [x] Validar limites das faixas
+- [x] Criar testes para os valores das tabelas
 
 ## FASE 3.2 — Receita para enquadramento
 
 Próxima etapa.
 
-* [ ] Modelar histórico mensal de receitas
-* [ ] Calcular RBT12
-* [ ] Calcular RBT12 proporcionalizada
-* [ ] Tratar primeiro mês de atividade
-* [ ] Tratar os primeiros 12 meses
-* [ ] Detectar automaticamente a base correta
-* [ ] Validar meses sem faturamento
-* [ ] Registrar quais competências entraram no cálculo
-* [ ] Criar testes com exemplos oficiais
+- [x] Modelar histórico mensal de receitas
+- [x] Calcular RBT12
+- [x] Calcular RBT12 proporcionalizada
+- [x] Tratar primeiro mês de atividade
+- [x] Tratar os primeiros 12 meses
+- [x] Detectar automaticamente a base correta
+- [x] Validar meses sem faturamento
+- [x] Registrar quais competências entraram no cálculo
+- [x] Criar testes com exemplos oficiais
 
 ## FASE 3.3 — Seleção da faixa
 
-* [ ] Combinar Anexo + receita de enquadramento
-* [ ] Encontrar faixa automaticamente
-* [ ] Retornar alíquota nominal
-* [ ] Retornar parcela a deduzir
-* [ ] Gerar decisão tributária da faixa
+- [x] Combinar Anexo + receita de enquadramento
+- [x] Encontrar faixa automaticamente
+- [x] Retornar alíquota nominal
+- [x] Retornar parcela a deduzir
+- [x] Gerar decisão tributária da faixa
 
 ---
 
 # FASE 4 — Alíquota efetiva
 
-* [ ] Implementar fórmula da alíquota efetiva
-* [ ] Utilizar receita correta para cálculo
-* [ ] Validar precisão monetária
-* [ ] Criar memória do cálculo
-* [ ] Criar testes por faixa
-* [ ] Criar testes de fronteira
+# FASE 4 — Alíquota efetiva
+
+- [x] Implementar fórmula da alíquota efetiva
+- [x] Utilizar receita correta para cálculo
+- [x] Tratar receita acumulada igual a zero
+- [x] Preservar precisão interna do cálculo
+- [x] Criar memória do cálculo
+- [x] Criar testes por faixa
+- [x] Criar testes com exemplos oficiais
 
 Fórmula conceitual:
 
@@ -306,11 +309,11 @@ Fórmula conceitual:
 
 # FASE 5 — Cálculo estimado do DAS
 
-* [ ] Receber receita do período
-* [ ] Aplicar alíquota efetiva
-* [ ] Calcular valor estimado
-* [ ] Registrar memória do cálculo
-* [ ] Criar testes
+- [ ] Receber receita do período
+- [ ] Aplicar alíquota efetiva
+- [ ] Calcular valor estimado
+- [ ] Registrar memória do cálculo
+- [ ] Criar testes
 
 ---
 
@@ -338,14 +341,14 @@ Possível divergência
 
 Planejado:
 
-* [ ] comparar valores;
-* [ ] calcular diferença;
-* [ ] comparar enquadramento;
-* [ ] comparar anexo;
-* [ ] comparar faixa;
-* [ ] identificar possível origem da divergência;
-* [ ] gerar alertas;
-* [ ] criar relatório.
+- [ ] comparar valores;
+- [ ] calcular diferença;
+- [ ] comparar enquadramento;
+- [ ] comparar anexo;
+- [ ] comparar faixa;
+- [ ] identificar possível origem da divergência;
+- [ ] gerar alertas;
+- [ ] criar relatório.
 
 ---
 
@@ -437,14 +440,14 @@ Possíveis módulos:
 
 Planejado:
 
-* [ ] formulário da empresa;
-* [ ] histórico mensal;
-* [ ] cálculo;
-* [ ] resultado;
-* [ ] memória de enquadramento;
-* [ ] comparação da guia;
-* [ ] alertas;
-* [ ] interface responsiva.
+- [ ] formulário da empresa;
+- [ ] histórico mensal;
+- [ ] cálculo;
+- [ ] resultado;
+- [ ] memória de enquadramento;
+- [ ] comparação da guia;
+- [ ] alertas;
+- [ ] interface responsiva.
 
 ---
 
@@ -452,11 +455,11 @@ Planejado:
 
 Planejado:
 
-* [ ] importar DAS;
-* [ ] importar extrato do PGDAS-D;
-* [ ] interpretar documentos;
-* [ ] comparar dados extraídos;
-* [ ] armazenar documentos com segurança.
+- [ ] importar DAS;
+- [ ] importar extrato do PGDAS-D;
+- [ ] interpretar documentos;
+- [ ] comparar dados extraídos;
+- [ ] armazenar documentos com segurança.
 
 ---
 
@@ -464,20 +467,20 @@ Planejado:
 
 Depois do MVP:
 
-* outros anexos do Simples Nacional;
-* atividades não sujeitas ao Fator R;
-* CNAEs;
-* segregação de receitas;
-* retenções;
-* ISS;
-* receitas monofásicas;
-* substituição tributária;
-* Lucro Presumido;
-* Reforma Tributária;
-* IBS;
-* CBS;
-* relatórios profissionais;
-* histórico de auditorias.
+- outros anexos do Simples Nacional;
+- atividades não sujeitas ao Fator R;
+- CNAEs;
+- segregação de receitas;
+- retenções;
+- ISS;
+- receitas monofásicas;
+- substituição tributária;
+- Lucro Presumido;
+- Reforma Tributária;
+- IBS;
+- CBS;
+- relatórios profissionais;
+- histórico de auditorias.
 
 ---
 
@@ -489,14 +492,14 @@ Regra do projeto:
 
 Casos especialmente importantes:
 
-* limites das faixas;
-* mudanças de anexo;
-* valores iguais ao limite;
-* valores imediatamente acima do limite;
-* empresas novas;
-* valores zerados;
-* mudanças de vigência;
-* regras históricas.
+- limites das faixas;
+- mudanças de anexo;
+- valores iguais ao limite;
+- valores imediatamente acima do limite;
+- empresas novas;
+- valores zerados;
+- mudanças de vigência;
+- regras históricas.
 
 ---
 
@@ -549,8 +552,9 @@ Fundação                    ██████████ 100%
 Domínio tributário          ██████████ 100%
 Motor do Fator R            ██████████ 100%
 Tabelas III e V             ██████████ 100%
-Receita para enquadramento  ░░░░░░░░░░   0%
-Alíquota efetiva            ░░░░░░░░░░   0%
+Receita para enquadramento  ██████████ 100%
+Seleção da faixa            ██████████ 100%
+Alíquota efetiva            ██████████ 100%
 DAS                          ░░░░░░░░░░   0%
 Auditoria                    ░░░░░░░░░░   0%
 API                          ░░░░░░░░░░   0%
