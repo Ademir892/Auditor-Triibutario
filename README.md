@@ -369,15 +369,15 @@ ou:
 ⚠ Possível divergência
 Planejado:
 
-- [] receber valor informado na guia;
+- [x] receber valor informado na guia;
 
-- [] comparar valor informado com valor calculado;
+- [x] comparar valor informado com valor calculado;
 
-- [] calcular diferença absoluta;
+- [x] calcular diferença absoluta;
 
-- [] calcular diferença percentual;
+- [x] calcular diferença percentual;
 
-- [] definir tolerância para diferenças de arredondamento;
+- [x] definir tolerância para diferenças de arredondamento;
 
 - [] comparar enquadramento;
 
@@ -391,9 +391,13 @@ Planejado:
 
 - [] gerar nível de severidade;
 
-- [] gerar decisão de auditoria;
+- [x] gerar decisão de auditoria;
 
 - [] produzir relatório explicável.
+
+- [x] Separar precisão de cálculo da apresentação
+
+- [x] Calcular valor monetário estimado
 
 ---
 
@@ -601,7 +605,8 @@ Receita para enquadramento  ██████████ 100%
 Seleção da faixa            ██████████ 100%
 Alíquota efetiva            ██████████ 100%
 Valor estimado              ██████████ 100%
-Auditoria                    ░░░░░░░░░░   0%
+Auditoria de valor          ██████████ 100%
+Auditoria estrutural        ░░░░░░░░░░   0%
 API                          ░░░░░░░░░░   0%
 Frontend                     ░░░░░░░░░░   0%
 ```
