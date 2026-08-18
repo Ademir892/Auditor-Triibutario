@@ -445,25 +445,27 @@ INSUFFICIENT_DATA
 → Dados insuficientes para determinar
   a principal origem da diferença
 
-# Próxima etapa — FASE 6.4
+## FASE 6.4 — Memória e relatório de auditoria
 
-Memória e relatório de auditoria
-
-- [] Criar modelo de relatório de auditoria
-- [] Gerar identificação da competência analisada
-- [] Gerar resumo executivo
-- [] Gerar memória do Fator R
-- [] Gerar memória da receita de enquadramento
-- [] Exibir Anexo e faixa tributária
-- [] Exibir fórmula da alíquota efetiva
-- [] Exibir valor estimado
-- [] Exibir comparação com valor informado
-- [] Exibir achados priorizados
-- [] Exibir principal hipótese
-- [] Exibir verificações recomendadas
-- [] Exibir referências das regras utilizadas
-- [] Preparar estrutura para futura geração de PDF
-- [] Criar testes do relatório
+- [x] Criar modelo de relatório de auditoria
+- [x] Gerar identificação da competência analisada
+- [x] Gerar resumo executivo
+- [x] Gerar memória do Fator R
+- [x] Gerar memória da receita de enquadramento
+- [x] Exibir Anexo e faixa tributária
+- [x] Exibir alíquota nominal e parcela a deduzir
+- [x] Exibir alíquota efetiva
+- [x] Exibir valor estimado
+- [x] Exibir comparação com valor informado
+- [x] Exibir achados priorizados
+- [x] Exibir principal hipótese
+- [x] Exibir verificações recomendadas
+- [x] Exibir referências das regras utilizadas
+- [x] Gerar rastreabilidade das decisões tributárias
+- [x] Criar representação estruturada do relatório
+- [x] Criar renderer Markdown
+- [x] Preparar estrutura para futura geração de PDF
+- [x] Criar testes automatizados
 ---
 
 # FASE 7 — Memória de enquadramento
@@ -673,7 +675,7 @@ Valor estimado              ██████████ 100%
 Auditoria de valor          ██████████ 100%
 Auditoria estrutural        ██████████ 100%
 Auditoria consolidada       ██████████ 100%
-Relatório de auditoria      ░░░░░░░░░░   0%
+Relatório de auditoria      ██████████ 100%
 API                          ░░░░░░░░░░   0%
 Frontend                     ░░░░░░░░░░   0%
 
