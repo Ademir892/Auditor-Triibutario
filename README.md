@@ -285,7 +285,6 @@ Próxima etapa.
 
 ---
 
-# FASE 4 — Alíquota efetiva
 
 # FASE 4 — Alíquota efetiva
 
@@ -307,48 +306,94 @@ Fórmula conceitual:
 
 ---
 
-# FASE 5 — Cálculo estimado do DAS
+# FASE 5 — Valor estimado do Simples
 
-- [ ] Receber receita do período
-- [ ] Aplicar alíquota efetiva
-- [ ] Calcular valor estimado
-- [ ] Registrar memória do cálculo
-- [ ] Criar testes
+- [x] Receber receita tributável da competência
 
----
+- [x] Aplicar alíquota efetiva
+
+- [x] Calcular valor bruto antes do arredondamento monetário
+
+- [x] Calcular valor monetário estimado
+
+- [x] Validar correspondência entre competência da receita e competência da apuração
+
+- [x] Tratar ausência de valor devido
+
+- [x] Identificar valor inferior ao mínimo para emissão de DAS
+
+- [x] Criar status do cálculo
+
+- [x] Criar memória auditável do valor estimado
+
+- [x] Criar testes para Anexo III
+
+- [x] Criar testes para Anexo V
+
+- [x] Criar testes de arredondamento e precisão
+
+# Status possíveis
+
+PAYABLE
+→ Valor apto para recolhimento
+
+DEFERRED_BELOW_MINIMUM
+→ Valor inferior ao mínimo para emissão de DAS
+
+NO_TAX_DUE
+→ Sem valor devido no período
+Fluxo implementado
+Receita tributável do PA
+          ×
+Alíquota efetiva
+          ↓
+Valor matemático
+          ↓
+Valor monetário estimado
+          ↓
+Status da apuração
+Nesta etapa, o sistema produz uma estimativa auditável para conferência. A geração oficial do DAS continua sendo realizada pelo PGDAS-D.
 
 # FASE 6 — Auditor de guia
 
-Entrada futura:
-
-```text
-Valor calculado pelo sistema
-+
-Valor constante na guia
-```
-
-Resultado:
-
-```text
-Compatível
-```
-
+Próxima etapa.
+Entrada planejada:
+Valor estimado pelo motor
+          +
+Valor informado na guia
+          ↓
+       Auditoria
+Resultado esperado:
+✅ Compatível
 ou:
-
-```text
-Possível divergência
-```
-
+⚠ Possível divergência
 Planejado:
 
-- [ ] comparar valores;
-- [ ] calcular diferença;
-- [ ] comparar enquadramento;
-- [ ] comparar anexo;
-- [ ] comparar faixa;
-- [ ] identificar possível origem da divergência;
-- [ ] gerar alertas;
-- [ ] criar relatório.
+- [] receber valor informado na guia;
+
+- [] comparar valor informado com valor calculado;
+
+- [] calcular diferença absoluta;
+
+- [] calcular diferença percentual;
+
+- [] definir tolerância para diferenças de arredondamento;
+
+- [] comparar enquadramento;
+
+- [] comparar anexo;
+
+- [] comparar faixa tributária;
+
+- [] comparar alíquota efetiva;
+
+- [] identificar possíveis causas da divergência;
+
+- [] gerar nível de severidade;
+
+- [] gerar decisão de auditoria;
+
+- [] produzir relatório explicável.
 
 ---
 
@@ -555,7 +600,7 @@ Tabelas III e V             ██████████ 100%
 Receita para enquadramento  ██████████ 100%
 Seleção da faixa            ██████████ 100%
 Alíquota efetiva            ██████████ 100%
-DAS                          ░░░░░░░░░░   0%
+Valor estimado              ██████████ 100%
 Auditoria                    ░░░░░░░░░░   0%
 API                          ░░░░░░░░░░   0%
 Frontend                     ░░░░░░░░░░   0%
