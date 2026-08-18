@@ -356,48 +356,45 @@ Nesta etapa, o sistema produz uma estimativa auditável para conferência. A ger
 
 # FASE 6 — Auditor de guia
 
-Próxima etapa.
-Entrada planejada:
-Valor estimado pelo motor
-          +
-Valor informado na guia
-          ↓
-       Auditoria
-Resultado esperado:
-✅ Compatível
-ou:
-⚠ Possível divergência
-Planejado:
+O módulo de auditoria compara o resultado produzido pelo motor tributário com os dados encontrados na guia ou na memória de apuração analisada.
+A auditoria foi dividida em duas camadas:
+AUDITORIA
+    │
+    ├── Valor
+    │
+    └── Estrutura tributária
+
+# FASE 6.1 — Auditoria do valor
 
 - [x] receber valor informado na guia;
-
 - [x] comparar valor informado com valor calculado;
-
 - [x] calcular diferença absoluta;
-
 - [x] calcular diferença percentual;
-
 - [x] definir tolerância para diferenças de arredondamento;
-
-- [] comparar enquadramento;
-
-- [] comparar anexo;
-
-- [] comparar faixa tributária;
-
-- [] comparar alíquota efetiva;
-
-- [] identificar possíveis causas da divergência;
-
-- [] gerar nível de severidade;
-
+- [x] comparar enquadramento;
+- [x] comparar anexo;
+- [x] comparar faixa tributária;
+- [x] comparar alíquota efetiva;
+- [x] identificar possíveis causas da divergência;
+- [x] gerar nível de severidade;
 - [x] gerar decisão de auditoria;
-
-- [] produzir relatório explicável.
-
+- [x] produzir relatório explicável.
 - [x] Separar precisão de cálculo da apresentação
-
 - [x] Calcular valor monetário estimado
+
+# Próxima etapa — FASE 6.3
+
+Auditoria consolidada
+
+- [] Unificar auditoria de valor e auditoria estrutural
+- [] Criar resultado único de auditoria
+- [] Determinar severidade geral
+- [] Priorizar achados
+- [] Identificar possível causa principal
+- [] Gerar resumo executivo
+- [] Gerar lista de verificações recomendadas
+- [] Preparar estrutura para relatório
+- [] Criar testes de auditoria completa
 
 ---
 
@@ -606,9 +603,11 @@ Seleção da faixa            ██████████ 100%
 Alíquota efetiva            ██████████ 100%
 Valor estimado              ██████████ 100%
 Auditoria de valor          ██████████ 100%
-Auditoria estrutural        ░░░░░░░░░░   0%
+Auditoria estrutural        ██████████ 100%
+Auditoria consolidada       ░░░░░░░░░░   0%
 API                          ░░░░░░░░░░   0%
 Frontend                     ░░░░░░░░░░   0%
+
 ```
 
 ---
