@@ -386,16 +386,84 @@ AUDITORIA
 
 Auditoria consolidada
 
-- [] Unificar auditoria de valor e auditoria estrutural
-- [] Criar resultado único de auditoria
-- [] Determinar severidade geral
-- [] Priorizar achados
-- [] Identificar possível causa principal
-- [] Gerar resumo executivo
-- [] Gerar lista de verificações recomendadas
-- [] Preparar estrutura para relatório
-- [] Criar testes de auditoria completa
+- [x] Unificar auditoria de valor e auditoria estrutural
+- [x] Criar resultado único de auditoria
+- [x] Determinar severidade geral
+- [x] Priorizar achados
+- [x] Identificar possível causa principal
+- [x] Gerar resumo executivo
+- [x] Gerar lista de verificações recomendadas
+- [x] Preparar estrutura para relatório
+- [x] Criar testes de auditoria completa
 
+Status consolidados
+COMPATIBLE
+→ Auditoria compatível
+
+REVIEW_REQUIRED
+→ Revisão adicional recomendada
+
+DIVERGENT
+→ Possível divergência
+Severidades consolidadas
+NONE
+→ Sem divergência
+
+LOW
+→ Baixa
+
+MEDIUM
+→ Média
+
+HIGH
+→ Alta
+Hipóteses principais
+NONE
+→ Nenhuma divergência principal identificada
+
+FACTOR_R_OR_ANNEX
+→ Possível divergência no Fator R
+  ou no enquadramento tributário
+
+REVENUE_BASIS_OR_BRACKET
+→ Possível divergência na receita de
+  enquadramento ou na faixa tributária
+
+EFFECTIVE_RATE
+→ Possível divergência no cálculo
+  da alíquota efetiva
+
+AMOUNT_ONLY
+→ Diferença de valor sem divergência
+  estrutural identificada
+
+DEFERRED_AMOUNT
+→ O valor pode depender de tributos
+  diferidos de competências anteriores
+
+INSUFFICIENT_DATA
+→ Dados insuficientes para determinar
+  a principal origem da diferença
+
+# Próxima etapa — FASE 6.4
+
+Memória e relatório de auditoria
+
+- [] Criar modelo de relatório de auditoria
+- [] Gerar identificação da competência analisada
+- [] Gerar resumo executivo
+- [] Gerar memória do Fator R
+- [] Gerar memória da receita de enquadramento
+- [] Exibir Anexo e faixa tributária
+- [] Exibir fórmula da alíquota efetiva
+- [] Exibir valor estimado
+- [] Exibir comparação com valor informado
+- [] Exibir achados priorizados
+- [] Exibir principal hipótese
+- [] Exibir verificações recomendadas
+- [] Exibir referências das regras utilizadas
+- [] Preparar estrutura para futura geração de PDF
+- [] Criar testes do relatório
 ---
 
 # FASE 7 — Memória de enquadramento
@@ -604,7 +672,8 @@ Alíquota efetiva            ██████████ 100%
 Valor estimado              ██████████ 100%
 Auditoria de valor          ██████████ 100%
 Auditoria estrutural        ██████████ 100%
-Auditoria consolidada       ░░░░░░░░░░   0%
+Auditoria consolidada       ██████████ 100%
+Relatório de auditoria      ░░░░░░░░░░   0%
 API                          ░░░░░░░░░░   0%
 Frontend                     ░░░░░░░░░░   0%
 
