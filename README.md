@@ -1411,6 +1411,39 @@ Próxima etapa.
 
 ---
 
+## FASE 9 — Composição tributária
+
+### 9.1 Componentes tributários
+
+- [x] Criar TaxJurisdiction
+- [x] Criar TaxComponent
+- [x] Modelar IRPJ
+- [x] Modelar CSLL
+- [x] Modelar COFINS
+- [x] Modelar PIS/Pasep
+- [x] Modelar CPP
+- [x] Modelar ISS
+- [x] Modelar ICMS
+- [x] Criar TaxComponentAllocation
+- [x] Criar TaxCompositionResult
+- [x] Suportar composição parcial
+- [x] Validar duplicidade de componentes
+- [x] Validar soma dos componentes
+- [x] Criar testes automatizados
+
+### 9.2 Repartição do Simples Nacional
+
+Próxima etapa.
+
+- [ ] Modelar tabelas de repartição
+- [ ] Versionar regras de repartição
+- [ ] Repartição do Anexo III
+- [ ] Repartição do Anexo V
+- [ ] Calcular valor por componente
+- [ ] Registrar memória da repartição
+- [ ] Conferir soma com o valor total
+- [ ] Criar testes com casos oficiais
+
 # Próximas grandes capacidades tributárias
 
 O roadmap de longo prazo inclui:
@@ -1648,13 +1681,15 @@ Sujeito auditado               ██████████ 100%
 
 Competências do caso           ██████████ 100%
 
-Evidências/documentos          ░░░░░░░░░░   0%
+Documentos/evidências           ██████████ 100%
 
-Persistência                   ░░░░░░░░░░   0%
+Componentes tributários         ██████████ 100%
 
-Frontend                       ░░░░░░░░░░   0%
+Repartição tributária           ░░░░░░░░░░   0%
 
-Expansão tributária            ░░░░░░░░░░   0%
+Persistência                    ░░░░░░░░░░   0%
+
+Frontend                        ░░░░░░░░░░   0%
 ```
 
 ---
