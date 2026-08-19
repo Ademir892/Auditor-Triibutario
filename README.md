@@ -1,189 +1,1184 @@
 # Auditor Tributário
 
-Sistema para cálculo, conferência e auditoria de tributos, com foco inicial em empresas optantes pelo **Simples Nacional**.
+Plataforma para **cálculo, conferência, explicação e auditoria tributária**.
 
-O projeto nasceu com o objetivo de permitir que empresários compreendam não apenas **quanto estão pagando**, mas também:
+O objetivo do projeto é permitir que uma pessoa ou empresa possa revisar uma apuração tributária, conferir uma guia mensal ou anual, obter uma segunda opinião independente e, principalmente, entender:
 
-- qual regra tributária foi aplicada;
-- por que determinada atividade entrou em determinado anexo;
-- qual faixa de tributação foi utilizada;
-- como a alíquota foi calculada;
-- quais dados participaram do cálculo;
-- qual base normativa foi utilizada;
-- se existem possíveis divergências entre o cálculo esperado e a guia emitida.
+> **Por que estou pagando isso?**
 
-> **Princípio central do projeto: calcular + explicar + rastrear.**
+O Auditor Tributário não pretende apenas retornar um valor.
+
+A proposta é reconstruir a lógica tributária utilizada, registrar a memória das decisões, comparar os resultados com os dados informados e indicar possíveis pontos de divergência.
 
 ---
 
-## Objetivo inicial
+# Visão do produto
 
-O primeiro MVP será direcionado a prestadores de serviços sujeitos ao **Fator R**, permitindo:
-
-1. calcular o Fator R;
-2. determinar o enquadramento entre Anexo III e Anexo V;
-3. determinar a faixa tributária;
-4. calcular a alíquota efetiva;
-5. estimar o DAS;
-6. comparar o resultado com uma guia existente;
-7. gerar uma memória de enquadramento;
-8. explicar as decisões tributárias utilizadas pelo sistema.
-
-O sistema não pretende substituir contador ou escrituração contábil.
-
-Sua função inicial é atuar como uma ferramenta de **conferência, transparência e auditoria tributária**.
-
----
-
-# Stack
-
-## Backend
-
-- Java 21
-- Spring Boot
-- Maven Wrapper
-- JUnit
-- API REST futuramente
-- PostgreSQL futuramente
-- Flyway futuramente
-
-## Frontend
-
-Planejado para uma fase posterior.
-
-Possíveis tecnologias:
-
-- React
-- Next.js
-- TypeScript
-
----
-
-# Estrutura atual
+O Auditor Tributário está sendo desenvolvido para executar cinco funções principais:
 
 ```text
-auditor-tributario/
-├── backend/
-│   ├── src/
-│   │   ├── main/
-│   │   │   └── java/
-│   │   │       └── br/com/auditortributario/
-│   │   │           └── taxrule/
-│   │   │               ├── domain/
-│   │   │               └── simples/
-│   │   └── test/
-│   │       └── java/
-│   │           └── br/com/auditortributario/
-│   ├── pom.xml
-│   └── mvnw
-├── docs/
-│   ├── casos-de-teste/
-│   └── regras-tributarias/
-├── frontend/
-└── README.md
+CALCULAR
+   ↓
+EXPLICAR
+   ↓
+RASTREAR
+   ↓
+COMPARAR
+   ↓
+AUDITAR
 ```
+
+A aplicação deve ser capaz de responder perguntas como:
+
+- Qual regra tributária foi aplicada?
+- Qual foi a base utilizada no cálculo?
+- Por que determinado anexo foi escolhido?
+- Qual faixa tributária foi aplicada?
+- Como a alíquota efetiva foi calculada?
+- Quanto o sistema estima que deveria ser recolhido?
+- Quanto foi informado na guia?
+- Existe divergência?
+- Onde está a divergência?
+- Qual ponto deveria ser investigado primeiro?
+- Quais informações ainda estão faltando?
+- Como explicar o cálculo para quem está pagando o tributo?
 
 ---
 
-# Arquitetura do motor
+# Objetivo de longo prazo
 
-O sistema está sendo construído de forma que as regras tributárias não fiquem espalhadas em controllers ou condicionais sem contexto.
+O projeto não ficará restrito a um único nicho, atividade ou tipo de contribuinte.
 
-Fluxo desejado:
+A visão é construir uma plataforma capaz de atender diferentes situações tributárias e diferentes perfis de usuários.
+
+O usuário poderá utilizar o sistema para:
+
+- conferir uma guia mensal;
+- revisar um período anual;
+- solicitar uma segunda opinião;
+- investigar uma possível divergência;
+- entender a composição de um tributo;
+- reconstruir a memória de uma apuração;
+- comparar valores informados com valores recalculados;
+- documentar uma auditoria;
+- acompanhar várias competências dentro do mesmo caso.
+
+---
+
+# Escopo tributário atual
+
+Neste momento, o motor tributário implementado está concentrado no:
 
 ```text
-Dados da empresa
-       ↓
-Competência
-       ↓
-Receitas / Folha
-       ↓
-Motor de regras
-       ↓
-Fator R
-       ↓
-Anexo
-       ↓
-Faixa tributária
-       ↓
-Alíquota efetiva
-       ↓
-Tributo estimado
-       ↓
-Auditoria
-       ↓
-Memória de enquadramento
+Simples Nacional
+└── serviços sujeitos ao Fator R
+    ├── Anexo III
+    └── Anexo V
 ```
+
+O sistema atualmente calcula:
+
+- classificação temporal da empresa;
+- Fator R;
+- enquadramento entre Anexo III e Anexo V;
+- RBT12;
+- RBT12 proporcionalizada;
+- faixa tributária;
+- alíquota nominal;
+- parcela a deduzir;
+- alíquota efetiva;
+- valor mensal estimado;
+- situação do valor calculado;
+- comparação com valor informado;
+- auditoria estrutural;
+- auditoria consolidada;
+- hipótese principal de divergência;
+- recomendações de conferência;
+- memória das decisões tributárias;
+- relatório estruturado de auditoria.
 
 ---
 
-# Explicabilidade
+# Fator R
 
-Todo cálculo relevante deverá produzir também uma decisão tributária.
+O sistema calcula o Fator R com base na relação entre folha e receita.
+
+```text
+Fator R =
+Folha considerada
+──────────────────
+Receita considerada
+```
+
+A regra atualmente modelada é:
+
+```text
+Fator R >= 28%
+        ↓
+    Anexo III
+
+Fator R < 28%
+        ↓
+     Anexo V
+```
+
+O valor utilizado na decisão é tratado com duas casas decimais sem arredondamento.
 
 Exemplo:
 
 ```text
-Regra:
-SIMPLES_FATOR_R
+Fator bruto:
+27,74%
 
-Entrada:
-FS12 = R$ 72.000,00
-RBT12 = R$ 286.000,00
+Valor considerado:
+27%
 
-Resultado matemático:
-25,17482517%
-
-Fator R considerado:
-25,00%
-
-Condição:
-Fator R inferior a 28%
-
-Enquadramento:
+Resultado:
 Anexo V
-
-Base normativa:
-Regra vigente utilizada pelo motor
 ```
 
-O objetivo é permitir que o frontend apresente futuramente:
+---
+
+# Regra temporal da empresa
+
+O sistema identifica automaticamente o tempo de existência da empresa em relação à competência analisada.
+
+Existem três situações:
 
 ```text
-Por que estou pagando isso?
+OPENING_MONTH
+Mês de abertura
+
+UNDER_13_MONTHS
+Empresa com menos de 13 meses
+
+STANDARD_12_MONTHS
+Empresa com histórico normal de 12 meses
 ```
 
-e não apenas:
+Essa classificação influencia as bases utilizadas nos cálculos.
+
+---
+
+# Receita utilizada para enquadramento
+
+O motor calcula automaticamente a base utilizada para determinar a faixa tributária.
+
+## Primeiro mês
 
 ```text
-Valor do imposto: R$ X
+RBT12p =
+Receita da competência × 12
 ```
+
+Exemplo:
+
+```text
+Receita:
+R$ 20.000,00
+
+RBT12p:
+R$ 240.000,00
+```
+
+## Empresa com menos de 13 meses
+
+O sistema utiliza a média das receitas anteriores desde a abertura e proporcionaliza o resultado para 12 meses.
+
+Exemplo:
+
+```text
+Fevereiro:
+R$ 10.000,00
+
+Março:
+R$ 0,00
+
+Abril:
+R$ 590.000,00
+
+Total:
+R$ 600.000,00
+
+Média:
+R$ 200.000,00
+
+RBT12p:
+R$ 2.400.000,00
+```
+
+O sistema diferencia:
+
+```text
+mês inexistente
+```
+
+de:
+
+```text
+mês existente com receita R$ 0,00
+```
+
+Receita zero é um dado válido.
+
+Mês ausente representa falta de informação.
+
+## A partir do 13º mês
+
+A base utilizada passa a ser:
+
+```text
+RBT12 =
+soma das receitas dos 12 meses anteriores
+```
+
+---
+
+# Anexos atualmente implementados
+
+## Anexo III
+
+| Faixa | Receita máxima | Alíquota nominal | Parcela a deduzir |
+|---|---:|---:|---:|
+| 1 | R$ 180.000 | 6,00% | R$ 0 |
+| 2 | R$ 360.000 | 11,20% | R$ 9.360 |
+| 3 | R$ 720.000 | 13,50% | R$ 17.640 |
+| 4 | R$ 1.800.000 | 16,00% | R$ 35.640 |
+| 5 | R$ 3.600.000 | 21,00% | R$ 125.640 |
+| 6 | R$ 4.800.000 | 33,00% | R$ 648.000 |
+
+## Anexo V
+
+| Faixa | Receita máxima | Alíquota nominal | Parcela a deduzir |
+|---|---:|---:|---:|
+| 1 | R$ 180.000 | 15,50% | R$ 0 |
+| 2 | R$ 360.000 | 18,00% | R$ 4.500 |
+| 3 | R$ 720.000 | 19,50% | R$ 9.900 |
+| 4 | R$ 1.800.000 | 20,50% | R$ 17.100 |
+| 5 | R$ 3.600.000 | 23,00% | R$ 62.100 |
+| 6 | R$ 4.800.000 | 30,50% | R$ 540.000 |
 
 ---
 
 # Versionamento das regras
 
-As regras tributárias devem possuir vigência e versão.
+As tabelas tributárias são versionadas.
 
-Exemplo conceitual:
+O sistema não deve utilizar automaticamente uma regra antiga em competências futuras.
+
+O escopo atual das tabelas foi deliberadamente limitado até:
 
 ```text
-Regra:
-SIMPLES_FATOR_R
-
-Versão:
-2026.1
-
-Vigência:
-competências aplicáveis àquela versão
-
-Base normativa:
-legislação e documentação oficial
+12/2026
 ```
 
-Uma regra futura não deve sobrescrever silenciosamente uma regra histórica.
+Se uma competência futura não possuir uma regra validada, o cálculo deve falhar de forma controlada em vez de utilizar silenciosamente uma tabela desatualizada.
 
-Isso permitirá recalcular corretamente competências antigas.
+---
+
+# Alíquota efetiva
+
+A alíquota efetiva é calculada utilizando:
+
+```text
+(RBT12 × alíquota nominal − parcela a deduzir)
+──────────────────────────────────────────────
+                    RBT12
+```
+
+Exemplo:
+
+```text
+RBT12:
+R$ 500.000,00
+
+Alíquota nominal:
+13,50%
+
+Parcela a deduzir:
+R$ 17.640,00
+```
+
+Resultado:
+
+```text
+Alíquota efetiva:
+9,972%
+```
+
+A aplicação preserva alta precisão internamente e realiza arredondamentos apenas quando necessário para apresentação monetária.
+
+---
+
+# Valor mensal estimado
+
+Após encontrar a alíquota efetiva:
+
+```text
+Valor estimado =
+Receita tributável da competência
+×
+Alíquota efetiva
+```
+
+Exemplo:
+
+```text
+Receita:
+R$ 10.000,00
+
+Alíquota efetiva:
+9,972%
+
+Valor estimado:
+R$ 997,20
+```
+
+O motor diferencia:
+
+```text
+rawTaxAmount
+```
+
+e:
+
+```text
+estimatedTaxAmount
+```
+
+permitindo preservar o valor matemático antes do arredondamento monetário.
+
+---
+
+# Status do valor estimado
+
+O sistema possui três estados:
+
+```text
+PAYABLE
+Valor apto para recolhimento
+
+DEFERRED_BELOW_MINIMUM
+Valor abaixo do mínimo considerado
+
+NO_TAX_DUE
+Nenhum valor devido
+```
+
+---
+
+# Auditoria do valor da guia
+
+O sistema pode comparar o valor calculado com o valor informado.
+
+Exemplo:
+
+```text
+Valor esperado:
+R$ 997,20
+
+Valor informado:
+R$ 1.752,00
+
+Diferença:
+R$ 754,80
+```
+
+O resultado informa:
+
+- diferença assinada;
+- diferença absoluta;
+- diferença percentual;
+- se o valor informado está acima do esperado;
+- se o valor informado está abaixo do esperado;
+- tolerância utilizada;
+- status da comparação.
+
+Status possíveis:
+
+```text
+EXACT_MATCH
+
+WITHIN_TOLERANCE
+
+DIVERGENT
+
+REQUIRES_ADDITIONAL_CONTEXT
+```
+
+A tolerância padrão atual é:
+
+```text
+R$ 0,05
+```
+
+Essa tolerância é uma heurística técnica interna do software e não uma regra legal.
+
+---
+
+# Auditoria estrutural
+
+Além do valor, o sistema compara elementos da estrutura tributária.
+
+Atualmente são auditados:
+
+- Fator R;
+- Anexo;
+- faixa;
+- alíquota efetiva.
+
+Exemplo:
+
+```text
+Calculado pelo sistema
+
+Fator R:
+30%
+
+Anexo:
+III
+
+Faixa:
+3
+
+Alíquota efetiva:
+9,972%
+```
+
+contra:
+
+```text
+Informado
+
+Fator R:
+25%
+
+Anexo:
+V
+
+Faixa:
+3
+
+Alíquota efetiva:
+17,52%
+```
+
+Possíveis achados:
+
+```text
+FATOR_R_MISMATCH
+ANNEX_MISMATCH
+BRACKET_MISMATCH
+EFFECTIVE_RATE_MISMATCH
+```
+
+Também existem achados para dados não informados:
+
+```text
+FATOR_R_NOT_REPORTED
+ANNEX_NOT_REPORTED
+BRACKET_NOT_REPORTED
+EFFECTIVE_RATE_NOT_REPORTED
+```
+
+Informação ausente não é automaticamente considerada informação errada.
+
+---
+
+# Severidade dos achados
+
+As severidades atuais são:
+
+```text
+NONE
+LOW
+MEDIUM
+HIGH
+```
+
+São classificações internas do software.
+
+Não representam classificação oficial da Receita Federal ou da legislação tributária.
+
+---
+
+# Auditoria consolidada
+
+O sistema combina:
+
+```text
+Auditoria de valor
+        +
+Auditoria estrutural
+```
+
+para gerar um diagnóstico único.
+
+Exemplo:
+
+```text
+Valor             ⚠ divergente
+Fator R           ⚠ divergente
+Anexo             ⚠ divergente
+Faixa             ✓ compatível
+Alíquota efetiva  ⚠ divergente
+```
+
+Resultado:
+
+```text
+Status:
+DIVERGENT
+
+Severidade:
+HIGH
+```
+
+---
+
+# Hipótese principal de divergência
+
+O Auditor Tributário também tenta priorizar onde a investigação deve começar.
+
+Possíveis causas:
+
+```text
+NONE
+
+FACTOR_R_OR_ANNEX
+
+REVENUE_BASIS_OR_BRACKET
+
+EFFECTIVE_RATE
+
+AMOUNT_ONLY
+
+DEFERRED_AMOUNT
+
+INSUFFICIENT_DATA
+```
+
+Exemplo:
+
+```text
+Fator R divergente
++
+Anexo divergente
++
+Valor divergente
+```
+
+pode gerar:
+
+```text
+Principal hipótese:
+FACTOR_R_OR_ANNEX
+```
+
+Essa classificação representa uma hipótese de auditoria.
+
+Não significa automaticamente que o contador ou responsável pela apuração cometeu um erro.
+
+---
+
+# Recomendações de conferência
+
+O sistema já consegue gerar recomendações como:
+
+- conferir folha utilizada no Fator R;
+- conferir pró-labore e encargos;
+- conferir receitas;
+- conferir competências;
+- conferir RBT12 ou RBT12p;
+- conferir anexo;
+- conferir faixa;
+- conferir alíquota nominal;
+- conferir parcela a deduzir;
+- conferir alíquota efetiva.
+
+---
+
+# Rastreabilidade
+
+Uma das características centrais do projeto é a memória das decisões tributárias.
+
+As principais etapas produzem um:
+
+```text
+TaxDecision
+```
+
+contendo:
+
+```text
+ruleCode
+ruleVersion
+description
+input
+condition
+result
+legalReference
+```
+
+Isso permite reconstruir posteriormente:
+
+```text
+qual regra foi aplicada
++
+qual versão estava vigente
++
+quais dados entraram
++
+qual condição foi satisfeita
++
+qual resultado foi produzido
++
+qual referência estava associada
+```
+
+---
+
+# Relatório de auditoria
+
+O sistema já possui um modelo estruturado de relatório.
+
+As seções atuais são:
+
+```text
+SUMMARY
+
+TAX_FRAMEWORK
+
+AMOUNT_COMPARISON
+
+FINDINGS
+
+RECOMMENDATIONS
+
+TRACEABILITY
+```
+
+Também existe renderização em Markdown.
+
+O relatório poderá futuramente alimentar:
+
+- frontend;
+- PDF;
+- compartilhamento;
+- histórico da auditoria;
+- relatórios anuais;
+- exportações.
+
+---
+
+# API HTTP
+
+O backend é desenvolvido utilizando Java e Spring Boot.
+
+Endpoints atuais:
+
+## Health check
+
+```http
+GET /api/health
+```
+
+Exemplo:
+
+```json
+{
+  "status": "UP",
+  "application": "auditor-tributario"
+}
+```
+
+---
+
+## Cálculo tributário
+
+```http
+POST /api/v1/simples/calculate
+```
+
+Exemplo de entrada:
+
+```json
+{
+  "openingDate": "2026-02-10",
+  "assessmentPeriod": "2026-02",
+  "fatorRPayrollBase": 6000.00,
+  "fatorRRevenueBase": 20000.00,
+  "taxableRevenue": 20000.00,
+  "priorMonthlyRevenues": []
+}
+```
+
+O endpoint retorna dados como:
+
+```text
+competência
+Fator R
+base temporal
+Anexo
+RBT12 / RBT12p
+faixa
+alíquota nominal
+parcela a deduzir
+alíquota efetiva
+receita tributável
+valor estimado
+status do valor
+versão da tabela
+```
+
+---
+
+# API de auditoria
+
+```http
+POST /api/v1/simples/audit
+```
+
+Além dos dados utilizados no cálculo, podem ser informados:
+
+```text
+valor da guia
+Fator R informado
+Anexo informado
+faixa informada
+alíquota efetiva informada
+```
+
+O resultado pode conter:
+
+```text
+status geral
+
+severidade
+
+valor esperado
+
+valor informado
+
+diferença
+
+auditoria estrutural
+
+achados
+
+principal hipótese
+
+resumo executivo
+
+recomendações
+```
+
+Uma divergência tributária é um resultado válido da auditoria.
+
+Portanto:
+
+```text
+DIVERGENT
+```
+
+não representa necessariamente erro HTTP.
+
+---
+
+# API de relatório
+
+```http
+POST /api/v1/simples/audit/report
+```
+
+O endpoint recebe os mesmos dados da auditoria e retorna:
+
+- competência;
+- status;
+- severidade;
+- principal hipótese;
+- título;
+- resumo executivo;
+- seções do relatório;
+- referências;
+- versão Markdown.
+
+Esse endpoint fecha o primeiro fluxo completo do produto:
+
+```text
+ENTRADA
+  ↓
+CÁLCULO
+  ↓
+AUDITORIA
+  ↓
+DIAGNÓSTICO
+  ↓
+EXPLICAÇÃO
+  ↓
+RELATÓRIO
+```
+
+---
+
+# Tratamento de erros da API
+
+Existe tratamento global para erros de entrada.
+
+Exemplos:
+
+```text
+campo obrigatório ausente
+valor negativo
+JSON inválido
+competência inválida
+empresa ainda não aberta
+histórico inconsistente
+regra incompatível
+```
+
+Erros de entrada retornam respostas estruturadas com:
+
+```text
+timestamp
+status
+error
+message
+path
+fieldErrors
+```
+
+O sistema deliberadamente não transforma todas as exceções em `400`.
+
+Falhas reais da aplicação devem continuar aparecendo como erros internos.
+
+---
+
+# Nova arquitetura de auditoria
+
+O projeto agora possui um conceito independente de:
+
+```text
+AuditCase
+```
+
+Um caso representa uma investigação tributária.
+
+Ele pode ser:
+
+```text
+MONTHLY
+
+ANNUAL
+
+SECOND_OPINION
+
+EXPLANATORY_REVIEW
+```
+
+Isso permite representar cenários como:
+
+```text
+"Confira minha guia deste mês"
+
+"Revise meu ano inteiro"
+
+"Quero uma segunda opinião"
+
+"Quero entender por que estou pagando isso"
+```
+
+---
+
+# Regimes tributários
+
+O modelo já admite os seguintes regimes:
+
+```text
+SIMPLES_NACIONAL
+
+LUCRO_PRESUMIDO
+
+LUCRO_REAL
+
+MEI
+
+OTHER
+```
+
+Atualmente somente o motor do:
+
+```text
+SIMPLES_NACIONAL
+```
+
+está implementado.
+
+Os demais fazem parte da arquitetura futura.
+
+---
+
+# Sujeito auditado
+
+O projeto também possui um modelo para representar quem está sendo analisado.
+
+```text
+AuditedSubject
+```
+
+Pode representar:
+
+```text
+INDIVIDUAL
+
+BUSINESS
+
+OTHER
+```
+
+O sujeito auditado possui:
+
+```text
+ID interno
+
+tipo
+
+nome de exibição
+
+identificador tributário opcional
+```
+
+Identificadores atualmente modelados:
+
+```text
+CPF
+
+CNPJ
+
+OTHER
+```
+
+A estrutura do CNPJ aceita formato tradicional e alfanumérico.
+
+O projeto não utiliza tipos numéricos para armazenar identificadores tributários.
+
+---
+
+# Identificação opcional
+
+Um caso poderá futuramente começar mesmo sem CPF ou CNPJ.
+
+Isso permite experiências como:
+
+```text
+"Quero apenas entender esta guia."
+```
+
+O sistema pode iniciar a análise e solicitar informações adicionais apenas quando forem necessárias.
+
+---
+
+# Período de auditoria
+
+O sistema possui o conceito:
+
+```text
+AuditPeriod
+```
+
+que pode representar:
+
+```text
+01/2026 → 01/2026
+```
+
+ou:
+
+```text
+01/2026 → 12/2026
+```
+
+ou qualquer intervalo contínuo:
+
+```text
+10/2026 → 02/2027
+```
+
+---
+
+# Competências do caso
+
+Cada caso possui suas competências.
+
+Exemplo:
+
+```text
+Auditoria anual de 2026
+
+01/2026
+02/2026
+03/2026
+04/2026
+05/2026
+06/2026
+07/2026
+08/2026
+09/2026
+10/2026
+11/2026
+12/2026
+```
+
+Cada competência possui estado próprio:
+
+```text
+PENDING
+
+IN_PROGRESS
+
+COMPLETED
+
+REQUIRES_INFORMATION
+```
+
+Isso prepara o sistema para cenários como:
+
+```text
+Janeiro       ✅ concluído
+Fevereiro     ✅ concluído
+Março         ⚠ aguardando informações
+Abril         🔄 em análise
+Maio          ⏳ pendente
+```
+
+---
+
+# Estrutura arquitetural
+
+A aplicação está sendo organizada aproximadamente assim:
+
+```text
+backend
+└── src
+    ├── main
+    │   └── java
+    │       └── br.com.auditortributario
+    │
+    │           ├── api
+    │           │   ├── error
+    │           │   ├── health
+    │           │   └── simples
+    │           │       ├── audit
+    │           │       └── calculation
+    │           │
+    │           ├── application
+    │           │   └── simples
+    │           │       └── audit
+    │           │
+    │           ├── auditcase
+    │           │   └── subject
+    │           │
+    │           └── taxrule
+    │               ├── domain
+    │               └── simples
+    │
+    └── test
+        └── java
+            └── br.com.auditortributario
+                ├── api
+                ├── auditcase
+                └── taxrule
+```
+
+A separação de responsabilidades segue:
+
+```text
+api
+↓
+HTTP e transporte
+
+application
+↓
+orquestração de casos de uso
+
+auditcase
+↓
+domínio da investigação tributária
+
+taxrule
+↓
+regras e cálculos tributários
+```
+
+---
+
+# Princípios de arquitetura
+
+O projeto segue alguns princípios importantes.
+
+## Regra tributária não pertence ao controller
+
+```text
+Controller
+↓
+Service
+↓
+Domain
+```
+
+Controllers devem apenas receber e devolver dados HTTP.
+
+---
+
+## Informação ausente não deve ser inventada
+
+Se determinado dado não estiver disponível:
+
+```text
+não informado
+```
+
+é diferente de:
+
+```text
+incorreto
+```
+
+---
+
+## Competências são independentes
+
+Uma auditoria anual será construída através da consolidação de competências mensais.
+
+Não haverá uma segunda implementação completamente diferente apenas para o anual.
+
+---
+
+## Regras tributárias devem ser versionadas
+
+Mudanças legislativas não devem alterar silenciosamente cálculos antigos.
+
+---
+
+## Cálculo precisa ser explicável
+
+Não basta produzir:
+
+```text
+R$ 997,20
+```
+
+O sistema precisa conseguir mostrar:
+
+```text
+como
++
+por que
++
+com qual regra
+```
+
+chegou a esse valor.
 
 ---
 
@@ -191,522 +1186,507 @@ Isso permitirá recalcular corretamente competências antigas.
 
 ## FASE 0 — Fundação
 
-- [x] Criar estrutura do projeto
-- [x] Configurar Java
-- [x] Configurar Spring Boot
-- [x] Configurar Maven Wrapper
-- [x] Configurar Git
-- [x] Criar estrutura monorepo
-- [x] Executar primeiro build
-- [x] Criar primeiro commit
+- [x] Estrutura inicial do projeto
+- [x] Backend Java
+- [x] Spring Boot
+- [x] Maven Wrapper
+- [x] Testes automatizados
+- [x] Git / GitHub
 
 ---
 
-## FASE 1 — Domínio tributário
+## FASE 1 — Domínio tributário inicial
 
-- [x] Criar `SimplesAnnex`
-- [x] Criar `FatorR`
-- [x] Criar `TaxDecision`
-- [x] Representar Anexo III
-- [x] Representar Anexo V
-- [x] Tratar Fator R com duas casas sem arredondamento
-- [x] Criar testes unitários
+- [x] Modelo de decisão tributária
+- [x] Estrutura de regras versionadas
+- [x] Tipos fundamentais do Simples
 
 ---
 
-## FASE 2 — Motor do Fator R
+## FASE 2 — Fator R
 
-### FASE 2.1 — Cálculo normal
+### 2.1 Cálculo normal
 
-- [x] Criar `FatorRCalculator`
-- [x] Calcular FS12 / RBT12
-- [x] Tratar valores zerados
-- [x] Determinar Anexo III ou V
-- [x] Criar `FatorRCalculationResult`
-- [x] Gerar `TaxDecision`
-- [x] Criar testes
+- [x] Cálculo do Fator R
+- [x] Truncamento
+- [x] Anexo III / V
 
-### FASE 2.2 — Empresas novas
+### 2.2 Empresas novas
 
-- [x] Criar bases de cálculo diferentes
-- [x] Tratar mês de abertura
-- [x] Utilizar FSPA / RPA
-- [x] Tratar empresas com menos de 13 meses
-- [x] Registrar a base utilizada na decisão
-- [x] Criar testes
+- [x] Mês de abertura
+- [x] Menos de 13 meses
+- [x] Casos especiais de folha e receita
 
-### FASE 2.3 — Seleção automática
+### 2.3 Seleção automática da base
 
-- [x] Criar `FatorRPeriodClassifier`
-- [x] Criar `FatorRCalculationRequest`
-- [x] Criar `FatorRAutomaticCalculator`
-- [x] Detectar mês de abertura
-- [x] Detectar empresa com menos de 13 meses
-- [x] Detectar cálculo normal
-- [x] Selecionar automaticamente a regra
-- [x] Criar testes
+- [x] Classificação temporal
+- [x] Seleção automática da regra
 
 ---
 
-# FASE 3 — Faixas e alíquotas
+## FASE 3 — Tabelas e faixas
 
-## FASE 3.1 — Tabelas tributárias
+### 3.1 Tabelas
 
-- [x] Modelar `SimplesTaxBracket`
-- [x] Modelar `SimplesTaxTable`
-- [x] Criar `SimplesTaxTableRegistry`
-- [x] Cadastrar Anexo III
-- [x] Cadastrar Anexo V
-- [x] Versionar tabelas
-- [x] Validar limites das faixas
-- [x] Criar testes para os valores das tabelas
+- [x] Anexo III
+- [x] Anexo V
+- [x] Versionamento
+- [x] Proteção para competências futuras
 
-## FASE 3.2 — Receita para enquadramento
+### 3.2 Receita de enquadramento
+
+- [x] RBT12
+- [x] RBT12p
+- [x] Empresa no primeiro mês
+- [x] Empresa com menos de 13 meses
+- [x] Histórico de 12 meses
+
+### 3.3 Seleção da faixa
+
+- [x] Seleção automática
+- [x] Alíquota nominal
+- [x] Parcela a deduzir
+
+---
+
+## FASE 4 — Alíquota efetiva
+
+- [x] Fórmula
+- [x] Precisão interna
+- [x] Rastreabilidade
+- [x] Testes
+
+---
+
+## FASE 5 — Valor estimado
+
+- [x] Receita tributável
+- [x] Valor matemático
+- [x] Valor monetário
+- [x] Valor mínimo
+- [x] Status do resultado
+- [x] Testes
+
+---
+
+## FASE 6 — Auditoria
+
+### 6.1 Auditoria de valor
+
+- [x] Comparação da guia
+- [x] Diferença absoluta
+- [x] Diferença percentual
+- [x] Tolerância
+
+### 6.2 Auditoria estrutural
+
+- [x] Fator R
+- [x] Anexo
+- [x] Faixa
+- [x] Alíquota efetiva
+- [x] Informações ausentes
+- [x] Severidades
+
+### 6.3 Auditoria consolidada
+
+- [x] Consolidação dos resultados
+- [x] Achados priorizados
+- [x] Severidade geral
+- [x] Principal hipótese
+- [x] Resumo executivo
+- [x] Recomendações
+
+### 6.4 Relatório
+
+- [x] Modelo de relatório
+- [x] Competência
+- [x] Resumo executivo
+- [x] Memória tributária
+- [x] Comparação
+- [x] Achados
+- [x] Recomendações
+- [x] Rastreabilidade
+- [x] Referências
+- [x] Markdown
+- [x] Estrutura preparada para PDF
+
+---
+
+## FASE 7 — API
+
+### 7.1 Bootstrap
+
+- [x] Spring MVC
+- [x] Health check
+- [x] Teste HTTP
+
+### 7.2 Cálculo
+
+- [x] Request DTO
+- [x] Response DTO
+- [x] Application Service
+- [x] Endpoint de cálculo
+- [x] Testes HTTP
+
+### 7.3 Erros
+
+- [x] Bean Validation
+- [x] GlobalExceptionHandler
+- [x] JSON inválido
+- [x] Erros de domínio
+- [x] Respostas estruturadas
+
+### 7.4 Auditoria
+
+- [x] API de auditoria
+- [x] Application Service
+- [x] Auditoria de valor
+- [x] Auditoria estrutural
+- [x] Auditoria consolidada
+- [x] Testes HTTP
+
+### 7.5 Relatório
+
+- [x] Serviço de relatório
+- [x] Endpoint de relatório
+- [x] Representação estruturada
+- [x] Markdown
+- [x] Testes HTTP
+
+---
+
+## FASE 8 — Plataforma de auditoria
+
+### 8.1 Caso de auditoria
+
+- [x] AuditCaseId
+- [x] AuditCaseType
+- [x] TaxRegime
+- [x] AuditPeriod
+- [x] AuditCaseStatus
+- [x] AuditCase
+
+### 8.2 Sujeito auditado
+
+- [x] AuditedSubjectId
+- [x] AuditedSubjectType
+- [x] TaxIdentifierType
+- [x] TaxIdentifier
+- [x] CPF
+- [x] CNPJ tradicional
+- [x] CNPJ alfanumérico
+- [x] Identificação opcional
+- [x] AuditedSubject
+
+### 8.3 Competências
+
+- [x] AuditCompetence
+- [x] AuditCompetenceStatus
+- [x] Geração automática pelo período
+- [x] Caso mensal
+- [x] Caso anual
+- [x] Intervalos personalizados
+- [x] Vínculo AuditCase ↔ AuditedSubject
+- [x] Busca de competência
+- [x] Validação das competências
+
+### 8.4 Evidências e documentos
 
 Próxima etapa.
 
-- [x] Modelar histórico mensal de receitas
-- [x] Calcular RBT12
-- [x] Calcular RBT12 proporcionalizada
-- [x] Tratar primeiro mês de atividade
-- [x] Tratar os primeiros 12 meses
-- [x] Detectar automaticamente a base correta
-- [x] Validar meses sem faturamento
-- [x] Registrar quais competências entraram no cálculo
-- [x] Criar testes com exemplos oficiais
-
-## FASE 3.3 — Seleção da faixa
-
-- [x] Combinar Anexo + receita de enquadramento
-- [x] Encontrar faixa automaticamente
-- [x] Retornar alíquota nominal
-- [x] Retornar parcela a deduzir
-- [x] Gerar decisão tributária da faixa
+- [ ] Documento do caso
+- [ ] Documento da competência
+- [ ] Tipo do documento
+- [ ] Origem do dado
+- [ ] Evidência tributária
+- [ ] Guia
+- [ ] Apuração
+- [ ] Declaração
+- [ ] Comprovante
+- [ ] Metadados
+- [ ] Histórico
+- [ ] Preparação para upload
+- [ ] Preparação para PDF
+- [ ] Preparação para OCR
 
 ---
 
+# Próximas grandes capacidades tributárias
 
-# FASE 4 — Alíquota efetiva
+O roadmap de longo prazo inclui:
 
-- [x] Implementar fórmula da alíquota efetiva
-- [x] Utilizar receita correta para cálculo
-- [x] Tratar receita acumulada igual a zero
-- [x] Preservar precisão interna do cálculo
-- [x] Criar memória do cálculo
-- [x] Criar testes por faixa
-- [x] Criar testes com exemplos oficiais
+- [ ] segregação completa de diferentes tipos de receita;
+- [ ] mais de uma atividade/anexo na mesma competência;
+- [ ] repartição entre IRPJ;
+- [ ] CSLL;
+- [ ] Cofins;
+- [ ] PIS/Pasep;
+- [ ] CPP;
+- [ ] ISS;
+- [ ] ICMS;
+- [ ] retenções tributárias;
+- [ ] ISS retido;
+- [ ] substituição tributária;
+- [ ] receitas monofásicas;
+- [ ] tributação concentrada;
+- [ ] isenções;
+- [ ] reduções;
+- [ ] receitas de exportação;
+- [ ] sublimites estaduais;
+- [ ] excesso de sublimite;
+- [ ] Anexo I;
+- [ ] Anexo II;
+- [x] Anexo III no escopo atual;
+- [ ] Anexo IV;
+- [x] Anexo V no escopo atual;
+- [ ] MEI;
+- [ ] Lucro Presumido;
+- [ ] Lucro Real;
+- [ ] parcelamentos;
+- [ ] juros;
+- [ ] multas.
 
-Fórmula conceitual:
+---
+
+# Plataforma futura
+
+Também estão planejados:
+
+- [ ] banco de dados;
+- [ ] persistência de casos;
+- [ ] histórico de auditorias;
+- [ ] autenticação;
+- [ ] usuários;
+- [ ] frontend;
+- [ ] dashboard;
+- [ ] upload de documentos;
+- [ ] leitura automática de PDF;
+- [ ] OCR;
+- [ ] relatórios PDF;
+- [ ] auditoria anual consolidada;
+- [ ] comparação entre anos;
+- [ ] acompanhamento de divergências recorrentes.
+
+---
+
+# Integrações futuras
+
+Em etapas mais avançadas poderão ser estudadas:
+
+- [ ] geração oficial do DAS;
+- [ ] integração com PGDAS-D;
+- [ ] transmissão de informações;
+- [ ] integração direta com Receita Federal.
+
+Essas funcionalidades não são prioridade imediata.
+
+A prioridade atual é construir um motor confiável para:
 
 ```text
-(RBT × alíquota nominal - parcela a deduzir)
-------------------------------------------------
-                      RBT
+CALCULAR
++
+EXPLICAR
++
+AUDITAR
++
+DOCUMENTAR
 ```
 
 ---
 
-# FASE 5 — Valor estimado do Simples
+# Limites atuais
 
-- [x] Receber receita tributável da competência
+O sistema ainda não substitui uma apuração completa realizada no PGDAS-D.
 
-- [x] Aplicar alíquota efetiva
+O valor produzido pelo motor deve ser apresentado como:
 
-- [x] Calcular valor bruto antes do arredondamento monetário
+> **Valor estimado pelo motor para conferência.**
 
-- [x] Calcular valor monetário estimado
+E não como:
 
-- [x] Validar correspondência entre competência da receita e competência da apuração
+> **Valor oficial necessariamente devido.**
 
-- [x] Tratar ausência de valor devido
-
-- [x] Identificar valor inferior ao mínimo para emissão de DAS
-
-- [x] Criar status do cálculo
-
-- [x] Criar memória auditável do valor estimado
-
-- [x] Criar testes para Anexo III
-
-- [x] Criar testes para Anexo V
-
-- [x] Criar testes de arredondamento e precisão
-
-# Status possíveis
-
-PAYABLE
-→ Valor apto para recolhimento
-
-DEFERRED_BELOW_MINIMUM
-→ Valor inferior ao mínimo para emissão de DAS
-
-NO_TAX_DUE
-→ Sem valor devido no período
-Fluxo implementado
-Receita tributável do PA
-          ×
-Alíquota efetiva
-          ↓
-Valor matemático
-          ↓
-Valor monetário estimado
-          ↓
-Status da apuração
-Nesta etapa, o sistema produz uma estimativa auditável para conferência. A geração oficial do DAS continua sendo realizada pelo PGDAS-D.
-
-# FASE 6 — Auditor de guia
-
-O módulo de auditoria compara o resultado produzido pelo motor tributário com os dados encontrados na guia ou na memória de apuração analisada.
-A auditoria foi dividida em duas camadas:
-AUDITORIA
-    │
-    ├── Valor
-    │
-    └── Estrutura tributária
-
-# FASE 6.1 — Auditoria do valor
-
-- [x] receber valor informado na guia;
-- [x] comparar valor informado com valor calculado;
-- [x] calcular diferença absoluta;
-- [x] calcular diferença percentual;
-- [x] definir tolerância para diferenças de arredondamento;
-- [x] comparar enquadramento;
-- [x] comparar anexo;
-- [x] comparar faixa tributária;
-- [x] comparar alíquota efetiva;
-- [x] identificar possíveis causas da divergência;
-- [x] gerar nível de severidade;
-- [x] gerar decisão de auditoria;
-- [x] produzir relatório explicável.
-- [x] Separar precisão de cálculo da apresentação
-- [x] Calcular valor monetário estimado
-
-# Próxima etapa — FASE 6.3
-
-Auditoria consolidada
-
-- [x] Unificar auditoria de valor e auditoria estrutural
-- [x] Criar resultado único de auditoria
-- [x] Determinar severidade geral
-- [x] Priorizar achados
-- [x] Identificar possível causa principal
-- [x] Gerar resumo executivo
-- [x] Gerar lista de verificações recomendadas
-- [x] Preparar estrutura para relatório
-- [x] Criar testes de auditoria completa
-
-Status consolidados
-COMPATIBLE
-→ Auditoria compatível
-
-REVIEW_REQUIRED
-→ Revisão adicional recomendada
-
-DIVERGENT
-→ Possível divergência
-Severidades consolidadas
-NONE
-→ Sem divergência
-
-LOW
-→ Baixa
-
-MEDIUM
-→ Média
-
-HIGH
-→ Alta
-Hipóteses principais
-NONE
-→ Nenhuma divergência principal identificada
-
-FACTOR_R_OR_ANNEX
-→ Possível divergência no Fator R
-  ou no enquadramento tributário
-
-REVENUE_BASIS_OR_BRACKET
-→ Possível divergência na receita de
-  enquadramento ou na faixa tributária
-
-EFFECTIVE_RATE
-→ Possível divergência no cálculo
-  da alíquota efetiva
-
-AMOUNT_ONLY
-→ Diferença de valor sem divergência
-  estrutural identificada
-
-DEFERRED_AMOUNT
-→ O valor pode depender de tributos
-  diferidos de competências anteriores
-
-INSUFFICIENT_DATA
-→ Dados insuficientes para determinar
-  a principal origem da diferença
-
-## FASE 6.4 — Memória e relatório de auditoria
-
-- [x] Criar modelo de relatório de auditoria
-- [x] Gerar identificação da competência analisada
-- [x] Gerar resumo executivo
-- [x] Gerar memória do Fator R
-- [x] Gerar memória da receita de enquadramento
-- [x] Exibir Anexo e faixa tributária
-- [x] Exibir alíquota nominal e parcela a deduzir
-- [x] Exibir alíquota efetiva
-- [x] Exibir valor estimado
-- [x] Exibir comparação com valor informado
-- [x] Exibir achados priorizados
-- [x] Exibir principal hipótese
-- [x] Exibir verificações recomendadas
-- [x] Exibir referências das regras utilizadas
-- [x] Gerar rastreabilidade das decisões tributárias
-- [x] Criar representação estruturada do relatório
-- [x] Criar renderer Markdown
-- [x] Preparar estrutura para futura geração de PDF
-- [x] Criar testes automatizados
----
-
-# FASE 7 — Memória de enquadramento
-
-Exemplo futuro:
+O produto é atualmente uma ferramenta de:
 
 ```text
-MEMÓRIA DE ENQUADRAMENTO
-
-Regime:
-Simples Nacional
-
-Atividade:
-Representação comercial
-
-Regra:
-Fator R
-
-Folha considerada:
-R$ ...
-
-Receita considerada:
-R$ ...
-
-Fator R:
-...%
-
-Enquadramento:
-Anexo ...
-
-Faixa:
-...
-
-Alíquota nominal:
-...%
-
-Parcela a deduzir:
-R$ ...
-
-Alíquota efetiva:
-...%
-
-Valor estimado:
-R$ ...
+conferência
+segunda opinião
+explicação
+investigação
+auditoria
 ```
 
-Também deverá existir uma visualização semelhante a:
+e não um substituto oficial dos sistemas da administração tributária.
+
+---
+
+# Tecnologias
+
+## Backend
 
 ```text
-Atividade
-   ↓
-Regra tributária
-   ↓
-Fator R
-   ↓
-Anexo
-   ↓
-Faixa
-   ↓
-Alíquota
-   ↓
-DAS
+Java
+Spring Boot
+Spring MVC
+Bean Validation
+Maven
+JUnit
+MockMvc
 ```
 
----
+## Persistência
 
-# FASE 8 — API REST
+Ainda não implementada.
 
-Planejado:
+Planejada:
 
 ```text
-POST /api/calculations
+PostgreSQL
+Flyway
 ```
 
-Possíveis módulos:
+## Frontend
 
-```text
-/api/companies
-/api/calculations
-/api/audits
-/api/tax-rules
-/api/reports
+Ainda não implementado.
+
+---
+
+# Executando o backend
+
+Entre na pasta:
+
+```bash
+cd backend
 ```
 
----
-
-# FASE 9 — Frontend
-
-Planejado:
-
-- [ ] formulário da empresa;
-- [ ] histórico mensal;
-- [ ] cálculo;
-- [ ] resultado;
-- [ ] memória de enquadramento;
-- [ ] comparação da guia;
-- [ ] alertas;
-- [ ] interface responsiva.
-
----
-
-# FASE 10 — Documentos
-
-Planejado:
-
-- [ ] importar DAS;
-- [ ] importar extrato do PGDAS-D;
-- [ ] interpretar documentos;
-- [ ] comparar dados extraídos;
-- [ ] armazenar documentos com segurança.
-
----
-
-# Expansões futuras
-
-Depois do MVP:
-
-- outros anexos do Simples Nacional;
-- atividades não sujeitas ao Fator R;
-- CNAEs;
-- segregação de receitas;
-- retenções;
-- ISS;
-- receitas monofásicas;
-- substituição tributária;
-- Lucro Presumido;
-- Reforma Tributária;
-- IBS;
-- CBS;
-- relatórios profissionais;
-- histórico de auditorias.
-
----
-
-# Qualidade
-
-Regra do projeto:
-
-> Uma regra tributária importante deve possuir teste automatizado.
-
-Casos especialmente importantes:
-
-- limites das faixas;
-- mudanças de anexo;
-- valores iguais ao limite;
-- valores imediatamente acima do limite;
-- empresas novas;
-- valores zerados;
-- mudanças de vigência;
-- regras históricas.
-
----
-
-# Precisão
-
-Valores monetários são representados com:
-
-```java
-BigDecimal
-```
-
-Não utilizar:
-
-```java
-double
-```
-
-para cálculos financeiros ou tributários.
-
----
-
-# Workflow
-
-Antes de commits importantes:
-
-```text
-1. Executar testes
-2. Executar build completo
-3. Verificar erros de formatação/whitespace
-4. Conferir git status
-5. Revisar arquivos alterados
-6. Fazer commit
-```
-
-Comandos de validação utilizados atualmente:
+Execute os testes:
 
 ```bash
 ./mvnw test
+```
+
+Execute a verificação completa:
+
+```bash
+./mvnw clean verify
+```
+
+Inicie a aplicação:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Por padrão:
+
+```text
+http://localhost:8080
+```
+
+Health check:
+
+```text
+http://localhost:8080/api/health
+```
+
+---
+
+# Qualidade antes dos commits
+
+Antes de commits importantes:
+
+```bash
 ./mvnw clean verify
 git diff --check
 git status
 ```
 
+Depois do stage:
+
+```bash
+git add .
+git diff --cached --check
+git status
+```
+
+Somente depois das verificações o commit deve ser realizado.
+
 ---
 
-# Status atual
+# Estado atual
 
 ```text
-Fundação                    ██████████ 100%
-Domínio tributário          ██████████ 100%
-Motor do Fator R            ██████████ 100%
-Tabelas III e V             ██████████ 100%
-Receita para enquadramento  ██████████ 100%
-Seleção da faixa            ██████████ 100%
-Alíquota efetiva            ██████████ 100%
-Valor estimado              ██████████ 100%
-Auditoria de valor          ██████████ 100%
-Auditoria estrutural        ██████████ 100%
-Auditoria consolidada       ██████████ 100%
-Relatório de auditoria      ██████████ 100%
-API                          ░░░░░░░░░░   0%
-Frontend                     ░░░░░░░░░░   0%
+Fundação                       ██████████ 100%
 
+Motor tributário inicial       ██████████ 100%
+
+Fator R                        ██████████ 100%
+
+Anexos III e V                 ██████████ 100%
+
+RBT12 / RBT12p                 ██████████ 100%
+
+Faixa tributária               ██████████ 100%
+
+Alíquota efetiva               ██████████ 100%
+
+Valor estimado                 ██████████ 100%
+
+Auditoria de valor             ██████████ 100%
+
+Auditoria estrutural           ██████████ 100%
+
+Auditoria consolidada          ██████████ 100%
+
+Relatório                      ██████████ 100%
+
+API inicial                    ██████████ 100%
+
+Caso de auditoria              ██████████ 100%
+
+Sujeito auditado               ██████████ 100%
+
+Competências do caso           ██████████ 100%
+
+Evidências/documentos          ░░░░░░░░░░   0%
+
+Persistência                   ░░░░░░░░░░   0%
+
+Frontend                       ░░░░░░░░░░   0%
+
+Expansão tributária            ░░░░░░░░░░   0%
 ```
 
 ---
 
-# Visão do produto
+# Direção do projeto
 
-O objetivo final não é criar apenas uma calculadora.
+O Auditor Tributário está deixando de ser apenas:
 
-Queremos construir um sistema capaz de responder:
+```text
+uma calculadora do Simples Nacional
+```
 
-> **Quanto eu devo pagar?**
+para se tornar:
 
-mas também:
+```text
+uma plataforma de investigação tributária
+```
 
-> **Por que estou pagando isso?**
+O objetivo final é permitir que qualquer usuário consiga responder:
 
-> **Qual regra foi utilizada?**
+> Quanto estou pagando?
 
-> **Qual dado levou ao meu enquadramento?**
+> Por que estou pagando?
 
-> **Minha guia está compatível com esses dados?**
+> Como esse valor foi calculado?
 
-Essa explicabilidade é uma das características centrais do projeto.
+> Essa apuração parece coerente?
 
----
+> Existe alguma divergência?
 
-## Aviso
+> Onde devo investigar primeiro?
 
-O projeto possui finalidade educacional, tecnológica e de apoio à conferência tributária.
+> Quais documentos sustentam essa conclusão?
 
-Os resultados deverão ser tratados como informações de apoio e não substituem escrituração contábil, obrigações acessórias, análise jurídica ou responsabilidade técnica de profissional habilitado.
+Esse é o norte do projeto.
