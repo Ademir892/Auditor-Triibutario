@@ -2,7 +2,6 @@ package br.com.auditortributario.taxrule.simples;
 
 import br.com.auditortributario.taxrule.domain.TaxDecision;
 
-import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
