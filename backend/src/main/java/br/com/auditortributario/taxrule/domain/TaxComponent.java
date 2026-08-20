@@ -2,78 +2,82 @@ package br.com.auditortributario.taxrule.domain;
 
 public enum TaxComponent {
 
-    IRPJ(
-            "IRPJ",
-            "Imposto sobre a Renda da Pessoa Jurídica",
-            TaxJurisdiction.FEDERAL
-    ),
+        IRPJ(
+                        "IRPJ",
+                        "Imposto sobre a Renda da Pessoa Jurídica",
+                        TaxJurisdiction.FEDERAL),
 
-    CSLL(
-            "CSLL",
-            "Contribuição Social sobre o Lucro Líquido",
-            TaxJurisdiction.FEDERAL
-    ),
+        CSLL(
+                        "CSLL",
+                        "Contribuição Social sobre o Lucro Líquido",
+                        TaxJurisdiction.FEDERAL),
 
-    COFINS(
-            "COFINS",
-            "Contribuição para o Financiamento da Seguridade Social",
-            TaxJurisdiction.FEDERAL
-    ),
+        COFINS(
+                        "COFINS",
+                        "Contribuição para o Financiamento da Seguridade Social",
+                        TaxJurisdiction.FEDERAL),
 
-    PIS_PASEP(
-            "PIS/Pasep",
-            "Contribuição para o PIS/Pasep",
-            TaxJurisdiction.FEDERAL
-    ),
+        PIS_PASEP(
+                        "PIS/Pasep",
+                        "Contribuição para o PIS/Pasep",
+                        TaxJurisdiction.FEDERAL),
 
-    CPP(
-            "CPP",
-            "Contribuição Patronal Previdenciária",
-            TaxJurisdiction.FEDERAL
-    ),
+        CPP(
+                        "CPP",
+                        "Contribuição Patronal Previdenciária",
+                        TaxJurisdiction.FEDERAL),
 
-    ISS(
-            "ISS",
-            "Imposto sobre Serviços",
-            TaxJurisdiction.MUNICIPAL
-    ),
+        IPI(
+                        "IPI",
+                        "Imposto sobre Produtos Industrializados",
+                        TaxJurisdiction.FEDERAL),
 
-    ICMS(
-            "ICMS",
-            "Imposto sobre Circulação de Mercadorias e Serviços",
-            TaxJurisdiction.STATE
-    );
+        ISS(
+                        "ISS",
+                        "Imposto sobre Serviços",
+                        TaxJurisdiction.MUNICIPAL),
 
-    private final String displayName;
+        ICMS(
+                        "ICMS",
+                        "Imposto sobre Circulação de Mercadorias e Serviços",
+                        TaxJurisdiction.STATE),
 
-    private final String description;
+        CBS(
+                        "CBS",
+                        "Contribuição sobre Bens e Serviços",
+                        TaxJurisdiction.FEDERAL),
 
-    private final TaxJurisdiction jurisdiction;
+        IBS(
+                        "IBS",
+                        "Imposto sobre Bens e Serviços",
+                        TaxJurisdiction.SHARED_STATE_MUNICIPAL);
 
-    TaxComponent(
-            String displayName,
-            String description,
-            TaxJurisdiction jurisdiction
-    ) {
-        this.displayName =
-                displayName;
+        private final String displayName;
 
-        this.description =
-                description;
+        private final String description;
 
-        this.jurisdiction =
-                jurisdiction;
-    }
+        private final TaxJurisdiction jurisdiction;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        TaxComponent(
+                        String displayName,
+                        String description,
+                        TaxJurisdiction jurisdiction) {
+                this.displayName = displayName;
 
-    public String getDescription() {
-        return description;
-    }
+                this.description = description;
 
-    public TaxJurisdiction getJurisdiction() {
-        return jurisdiction;
-    }
+                this.jurisdiction = jurisdiction;
+        }
+
+        public String getDisplayName() {
+                return displayName;
+        }
+
+        public String getDescription() {
+                return description;
+        }
+
+        public TaxJurisdiction getJurisdiction() {
+                return jurisdiction;
+        }
 }

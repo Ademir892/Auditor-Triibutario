@@ -2,23 +2,26 @@ package br.com.auditortributario.taxrule.domain;
 
 public enum TaxJurisdiction {
 
-    FEDERAL(
-            "Federal"),
+        FEDERAL(
+                        "Federal"),
 
-    STATE(
-            "Estadual"),
+        STATE(
+                        "Estadual"),
 
-    MUNICIPAL(
-            "Municipal");
+        MUNICIPAL(
+                        "Municipal"),
 
-    private final String displayName;
+        SHARED_STATE_MUNICIPAL(
+                        "Compartilhada entre Estados, Distrito Federal e Municípios");
 
-    TaxJurisdiction(
-            String displayName) {
-        this.displayName = displayName;
-    }
+        private final String displayName;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        TaxJurisdiction(
+                        String displayName) {
+                this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+                return displayName;
+        }
 }
