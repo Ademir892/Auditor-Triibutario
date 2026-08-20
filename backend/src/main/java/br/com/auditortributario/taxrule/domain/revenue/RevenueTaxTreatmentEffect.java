@@ -2,26 +2,29 @@ package br.com.auditortributario.taxrule.domain.revenue;
 
 public enum RevenueTaxTreatmentEffect {
 
-    EXCLUDE_COMPONENT(
-            "Excluir componente da tributação comum"),
+        EXCLUDE_COMPONENT(
+                        "Excluir componente do valor devido no Simples Nacional"),
 
-    REQUIRE_SPECIAL_CALCULATION(
-            "Exigir cálculo tributário específico"),
+        REQUIRE_SPECIAL_CALCULATION(
+                        "Exigir regra adicional antes de concluir o cálculo"),
 
-    REDUCE_COMPONENT(
-            "Aplicar redução ao componente"),
+        REQUIRE_EXTERNAL_CALCULATION(
+                        "Exigir cálculo ou recolhimento fora do Simples Nacional"),
 
-    WITHHOLD_COMPONENT(
-            "Componente sujeito à retenção");
+        REDUCE_COMPONENT(
+                        "Aplicar redução ao componente"),
 
-    private final String displayName;
+        WITHHOLD_COMPONENT(
+                        "Componente retido e não incluído no recolhimento pelo Simples");
 
-    RevenueTaxTreatmentEffect(
-            String displayName) {
-        this.displayName = displayName;
-    }
+        private final String displayName;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        RevenueTaxTreatmentEffect(
+                        String displayName) {
+                this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+                return displayName;
+        }
 }

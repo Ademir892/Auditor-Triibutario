@@ -12,189 +12,261 @@ import java.util.Objects;
 
 public final class SimplesRevenueTaxTreatmentResolver {
 
-    public List<RevenueTaxComponentTreatment> resolve(
-            RevenueEntry revenue) {
-        Objects.requireNonNull(
-                revenue,
-                "A receita não pode ser nula.");
+        public List<RevenueTaxComponentTreatment> resolve(
+                        RevenueEntry revenue) {
+                Objects.requireNonNull(
+                                revenue,
+                                "A receita não pode ser nula.");
 
-        List<RevenueTaxComponentTreatment> results = new ArrayList<>();
+                List<RevenueTaxComponentTreatment> results = new ArrayList<>();
 
-        for (RevenueTaxTreatment treatment : revenue.treatments()) {
+                for (RevenueTaxTreatment treatment : revenue.treatments()) {
 
-            switch (treatment) {
+                        switch (treatment) {
 
-                case MONOPHASIC -> {
-                    results.add(
-                            new RevenueTaxComponentTreatment(
-                                    treatment,
-                                    TaxComponent.PIS_PASEP,
-                                    RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
-                                    "Receita monofásica exige tratamento "
-                                            + "específico de PIS/Pasep."));
+                                case MONOPHASIC ->
+                                        addMonophasicTreatments(
+                                                        results,
+                                                        treatment);
 
-                    results.add(
-                            new RevenueTaxComponentTreatment(
-                                    treatment,
-                                    TaxComponent.COFINS,
-                                    RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
-                                    "Receita monofásica exige tratamento "
-                                            + "específico de COFINS."));
+                                case TAX_SUBSTITUTION ->
+                                        addLegacyTaxSubstitutionTreatment(
+                                                        results,
+                                                        treatment);
+
+                                case ICMS_ST_SUBSTITUTED ->
+                                        results.add(
+                                                        new RevenueTaxComponentTreatment(
+                                                                        treatment,
+                                                                        TaxComponent.ICMS,
+                                                                        RevenueTaxTreatmentEffect.EXCLUDE_COMPONENT,
+                                                                        "Na condição de contribuinte substituído, "
+                                                                                        + "o percentual correspondente ao ICMS "
+                                                                                        + "deve ser desconsiderado desta receita "
+                                                                                        + "no cálculo do Simples Nacional."));
+
+                                case ICMS_ST_SUBSTITUTE ->
+                                        results.add(
+                                                        new RevenueTaxComponentTreatment(
+                                                                        treatment,
+                                                                        TaxComponent.ICMS,
+                                                                        RevenueTaxTreatmentEffect.REQUIRE_EXTERNAL_CALCULATION,
+                                                                        "Na condição de contribuinte substituto, "
+                                                                                        + "o ICMS da operação própria permanece "
+                                                                                        + "no Simples Nacional, enquanto o ICMS "
+                                                                                        + "devido por substituição tributária "
+                                                                                        + "possui apuração e recolhimento próprios."));
+
+                                case ICMS_ANTICIPATION_WITH_CLOSURE ->
+                                        results.add(
+                                                        new RevenueTaxComponentTreatment(
+                                                                        treatment,
+                                                                        TaxComponent.ICMS,
+                                                                        RevenueTaxTreatmentEffect.EXCLUDE_COMPONENT,
+                                                                        "Na antecipação de ICMS com encerramento "
+                                                                                        + "de tributação, o percentual de ICMS "
+                                                                                        + "é desconsiderado desta receita "
+                                                                                        + "no cálculo do Simples Nacional."));
+
+                                case ISS_WITHHELD ->
+                                        results.add(
+                                                        new RevenueTaxComponentTreatment(
+                                                                        treatment,
+                                                                        TaxComponent.ISS,
+                                                                        RevenueTaxTreatmentEffect.WITHHOLD_COMPONENT,
+                                                                        "Quando o ISS foi retido, o percentual "
+                                                                                        + "correspondente ao ISS deve ser "
+                                                                                        + "desconsiderado desta receita "
+                                                                                        + "no cálculo do Simples Nacional."));
+
+                                case REDUCTION ->
+                                        results.addAll(
+                                                        reductionTreatments(
+                                                                        treatment));
+
+                                case EXEMPTION ->
+                                        results.addAll(
+                                                        exemptionTreatments(
+                                                                        treatment));
+
+                                case EXPORT ->
+                                        results.addAll(
+                                                        exportTreatments(
+                                                                        treatment));
+                        }
                 }
 
-                case TAX_SUBSTITUTION ->
-                    results.add(
-                            new RevenueTaxComponentTreatment(
-                                    treatment,
-                                    TaxComponent.ICMS,
-                                    RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
-                                    "Receita sujeita à substituição "
-                                            + "tributária exige tratamento "
-                                            + "específico do ICMS."));
-
-                case ISS_WITHHELD ->
-                    results.add(
-                            new RevenueTaxComponentTreatment(
-                                    treatment,
-                                    TaxComponent.ISS,
-                                    RevenueTaxTreatmentEffect.WITHHOLD_COMPONENT,
-                                    "Receita com ISS retido exige "
-                                            + "tratamento específico do ISS."));
-
-                case REDUCTION ->
-                    results.addAll(
-                            reductionTreatments(
-                                    treatment));
-
-                case EXEMPTION ->
-                    results.addAll(
-                            exemptionTreatments(
-                                    treatment));
-
-                case EXPORT ->
-                    results.addAll(
-                            exportTreatments(
-                                    treatment));
-            }
+                return List.copyOf(
+                                results);
         }
 
-        return List.copyOf(
-                results);
-    }
+        private void addMonophasicTreatments(
+                        List<RevenueTaxComponentTreatment> results,
+                        RevenueTaxTreatment treatment) {
+                results.add(
+                                new RevenueTaxComponentTreatment(
+                                                treatment,
+                                                TaxComponent.PIS_PASEP,
+                                                RevenueTaxTreatmentEffect.EXCLUDE_COMPONENT,
+                                                "Na receita sujeita à tributação monofásica, "
+                                                                + "o percentual correspondente ao PIS/Pasep "
+                                                                + "é desconsiderado no cálculo "
+                                                                + "do Simples Nacional."));
 
-    private List<RevenueTaxComponentTreatment> reductionTreatments(
-            RevenueTaxTreatment treatment) {
-        return List.of(
-                specialCalculation(
-                        treatment,
-                        TaxComponent.IRPJ,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto no IRPJ."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.CSLL,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto na CSLL."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.COFINS,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto na COFINS."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.PIS_PASEP,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto no PIS/Pasep."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.CPP,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto na CPP."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ISS,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto no ISS."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ICMS,
-                        "Receita com redução exige regra específica "
-                                + "para determinar o impacto no ICMS."));
-    }
+                results.add(
+                                new RevenueTaxComponentTreatment(
+                                                treatment,
+                                                TaxComponent.COFINS,
+                                                RevenueTaxTreatmentEffect.EXCLUDE_COMPONENT,
+                                                "Na receita sujeita à tributação monofásica, "
+                                                                + "o percentual correspondente à COFINS "
+                                                                + "é desconsiderado no cálculo "
+                                                                + "do Simples Nacional."));
+        }
 
-    private List<RevenueTaxComponentTreatment> exemptionTreatments(
-            RevenueTaxTreatment treatment) {
-        return List.of(
-                specialCalculation(
-                        treatment,
-                        TaxComponent.IRPJ,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.CSLL,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.COFINS,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.PIS_PASEP,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.CPP,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ISS,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ICMS,
-                        "Receita com isenção exige identificação "
-                                + "dos componentes efetivamente alcançados."));
-    }
+        private void addLegacyTaxSubstitutionTreatment(
+                        List<RevenueTaxComponentTreatment> results,
+                        RevenueTaxTreatment treatment) {
+                results.add(
+                                new RevenueTaxComponentTreatment(
+                                                treatment,
+                                                TaxComponent.ICMS,
+                                                RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
+                                                "A classificação genérica TAX_SUBSTITUTION "
+                                                                + "não informa se o contribuinte é substituto "
+                                                                + "ou substituído. É necessário determinar "
+                                                                + "a posição tributária antes de alterar "
+                                                                + "o componente ICMS."));
+        }
 
-    private List<RevenueTaxComponentTreatment> exportTreatments(
-            RevenueTaxTreatment treatment) {
-        return List.of(
-                specialCalculation(
-                        treatment,
-                        TaxComponent.PIS_PASEP,
-                        "Receita de exportação exige tratamento "
-                                + "específico de PIS/Pasep."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.COFINS,
-                        "Receita de exportação exige tratamento "
-                                + "específico de COFINS."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ICMS,
-                        "Receita de exportação exige tratamento "
-                                + "específico do ICMS."),
-                specialCalculation(
-                        treatment,
-                        TaxComponent.ISS,
-                        "Receita de exportação de serviços exige "
-                                + "análise específica quanto ao ISS."));
-    }
+        private List<RevenueTaxComponentTreatment> reductionTreatments(
+                        RevenueTaxTreatment treatment) {
+                return List.of(
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.IRPJ,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente o IRPJ."),
 
-    private RevenueTaxComponentTreatment specialCalculation(
-            RevenueTaxTreatment treatment,
-            TaxComponent component,
-            String explanation) {
-        return new RevenueTaxComponentTreatment(
-                treatment,
-                component,
-                RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
-                explanation);
-    }
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.CSLL,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente a CSLL."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.COFINS,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente a COFINS."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.PIS_PASEP,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente o PIS/Pasep."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.CPP,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente a CPP."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ISS,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente o ISS."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ICMS,
+                                                "A redução informada não possui regra suficiente "
+                                                                + "para alterar automaticamente o ICMS."));
+        }
+
+        private List<RevenueTaxComponentTreatment> exemptionTreatments(
+                        RevenueTaxTreatment treatment) {
+                return List.of(
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.IRPJ,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.CSLL,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.COFINS,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.PIS_PASEP,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.CPP,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ISS,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ICMS,
+                                                "É necessário identificar quais componentes "
+                                                                + "são efetivamente alcançados pela isenção."));
+        }
+
+        private List<RevenueTaxComponentTreatment> exportTreatments(
+                        RevenueTaxTreatment treatment) {
+                return List.of(
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.PIS_PASEP,
+                                                "Receita de exportação exige regra específica "
+                                                                + "antes da alteração do PIS/Pasep."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.COFINS,
+                                                "Receita de exportação exige regra específica "
+                                                                + "antes da alteração da COFINS."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ICMS,
+                                                "Receita de exportação exige regra específica "
+                                                                + "antes da alteração do ICMS."),
+
+                                specialCalculation(
+                                                treatment,
+                                                TaxComponent.ISS,
+                                                "Exportação de serviços exige análise específica "
+                                                                + "para determinar o tratamento do ISS."));
+        }
+
+        private RevenueTaxComponentTreatment specialCalculation(
+                        RevenueTaxTreatment treatment,
+                        TaxComponent component,
+                        String explanation) {
+                return new RevenueTaxComponentTreatment(
+                                treatment,
+                                component,
+                                RevenueTaxTreatmentEffect.REQUIRE_SPECIAL_CALCULATION,
+                                explanation);
+        }
 }

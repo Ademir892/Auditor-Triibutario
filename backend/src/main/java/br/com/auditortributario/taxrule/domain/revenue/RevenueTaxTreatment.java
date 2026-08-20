@@ -2,32 +2,48 @@ package br.com.auditortributario.taxrule.domain.revenue;
 
 public enum RevenueTaxTreatment {
 
-    MONOPHASIC(
-            "Tributação monofásica"),
+        MONOPHASIC(
+                        "Tributação monofásica"),
 
-    TAX_SUBSTITUTION(
-            "Substituição tributária"),
+        /**
+         * Mantido temporariamente para compatibilidade com código já criado.
+         *
+         * Não deve ser utilizado para cálculo automático porque não informa
+         * se o contribuinte está na condição de substituto ou substituído.
+         */
+        @Deprecated
+        TAX_SUBSTITUTION(
+                        "Substituição tributária sem definição da posição do contribuinte"),
 
-    EXPORT(
-            "Receita de exportação"),
+        ICMS_ST_SUBSTITUTED(
+                        "ICMS-ST - contribuinte substituído"),
 
-    EXEMPTION(
-            "Isenção"),
+        ICMS_ST_SUBSTITUTE(
+                        "ICMS-ST - contribuinte substituto"),
 
-    REDUCTION(
-            "Redução tributária"),
+        ICMS_ANTICIPATION_WITH_CLOSURE(
+                        "Antecipação de ICMS com encerramento de tributação"),
 
-    ISS_WITHHELD(
-            "ISS retido");
+        EXPORT(
+                        "Receita de exportação"),
 
-    private final String displayName;
+        EXEMPTION(
+                        "Isenção"),
 
-    RevenueTaxTreatment(
-            String displayName) {
-        this.displayName = displayName;
-    }
+        REDUCTION(
+                        "Redução tributária"),
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        ISS_WITHHELD(
+                        "ISS retido");
+
+        private final String displayName;
+
+        RevenueTaxTreatment(
+                        String displayName) {
+                this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+                return displayName;
+        }
 }
