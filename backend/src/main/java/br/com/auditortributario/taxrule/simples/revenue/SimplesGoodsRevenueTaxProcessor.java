@@ -18,6 +18,7 @@ public final class SimplesGoodsRevenueTaxProcessor {
     private final SimplesRevenueTaxCalculator taxCalculator;
 
     private final SimplesRevenueTaxCompositionAdjuster compositionAdjuster;
+    
 
     public SimplesGoodsRevenueTaxProcessor() {
         this.classifier = new SimplesRevenueClassifier();

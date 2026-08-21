@@ -2,34 +2,40 @@ package br.com.auditortributario.taxrule.simples.revenue;
 
 public enum SimplesCompetenceRevenueItemStatus {
 
-    COMPLETED(
-            "Processamento concluído"),
+        COMPLETED(
+                        "Processamento concluído"),
 
-    COMPLETED_WITH_EXTERNAL_OBLIGATION(
-            "Processamento concluído com obrigação externa ao Simples"),
+        COMPLETED_WITH_EXTERNAL_OBLIGATION(
+                        "Processamento concluído com obrigação externa ao Simples"),
 
-    REQUIRES_CLASSIFICATION(
-            "Necessita classificação tributária adicional"),
+        REQUIRES_FATOR_R(
+                        "Necessita do Fator R da competência"),
 
-    REQUIRES_ADDITIONAL_RULES(
-            "Necessita regras tributárias adicionais"),
+        REQUIRES_REVENUE_BASIS(
+                        "Necessita da memória da base de enquadramento"),
 
-    UNSUPPORTED_ROUTE(
-            "Rota tributária ainda não suportada por este processador");
+        REQUIRES_CLASSIFICATION(
+                        "Necessita classificação tributária adicional"),
 
-    private final String displayName;
+        REQUIRES_ADDITIONAL_RULES(
+                        "Necessita regras tributárias adicionais"),
 
-    SimplesCompetenceRevenueItemStatus(
-            String displayName) {
-        this.displayName = displayName;
-    }
+        UNSUPPORTED_ROUTE(
+                        "Rota tributária ainda não suportada por este processador");
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        private final String displayName;
 
-    public boolean isFinal() {
-        return this == COMPLETED
-                || this == COMPLETED_WITH_EXTERNAL_OBLIGATION;
-    }
+        SimplesCompetenceRevenueItemStatus(
+                        String displayName) {
+                this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+                return displayName;
+        }
+
+        public boolean isFinal() {
+                return this == COMPLETED
+                                || this == COMPLETED_WITH_EXTERNAL_OBLIGATION;
+        }
 }
