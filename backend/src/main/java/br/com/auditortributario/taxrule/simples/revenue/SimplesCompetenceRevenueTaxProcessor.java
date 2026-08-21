@@ -23,12 +23,16 @@ public final class SimplesCompetenceRevenueTaxProcessor {
 
         private final SimplesServiceRevenueTaxProcessor serviceProcessor;
 
+        private final SimplesAnnexIVRevenueTaxProcessor annexIVProcessor;
+
         public SimplesCompetenceRevenueTaxProcessor() {
                 this.classifier = new SimplesRevenueClassifier();
 
                 this.goodsProcessor = new SimplesGoodsRevenueTaxProcessor();
 
                 this.serviceProcessor = new SimplesServiceRevenueTaxProcessor();
+
+                this.annexIVProcessor = new SimplesAnnexIVRevenueTaxProcessor();
         }
 
         public SimplesCompetenceRevenueTaxResult process(
@@ -149,7 +153,29 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                                         taxResult);
                 }
 
-                if (isServiceRoute(
+                if (route == SimplesRevenueTaxRoute.ANNEX_IV) {
+                        SimplesServiceTaxRule serviceTaxRule = context
+                                        .serviceTaxRuleFor(
+                                                        revenue)
+                                        .orElseThrow(
+                                                        () -> new IllegalStateException(
+                                                                        "Uma receita classificada "
+                                                                                        + "no Anexo IV precisa possuir "
+                                                                                        + "regra tributária específica "
+                                                                                        + "associada no contexto."));
+
+                        SimplesAnnexIVRevenueTaxResult taxResult = annexIVProcessor.process(
+                                        revenue,
+                                        context.revenueBasis(),
+                                        serviceTaxRule);
+
+                        return finalResult(
+                                        revenue,
+                                        classification,
+                                        taxResult);
+                }
+
+                if (isFatorRServiceRoute(
                                 route)) {
                         if (context.fatorRResult().isEmpty()) {
                                 throw new IllegalStateException(
@@ -203,6 +229,28 @@ public final class SimplesCompetenceRevenueTaxProcessor {
         private SimplesRevenueClassificationResult classifyRevenue(
                         RevenueEntry revenue,
                         SimplesCompetenceTaxContext context) {
+                Optional<SimplesServiceTaxRule> serviceTaxRule = context.serviceTaxRuleFor(
+                                revenue);
+
+                /*
+                 * A regra específica possui prioridade nesta etapa
+                 * para que combinações inválidas também sejam
+                 * detectadas pelo classificador.
+                 *
+                 * Exemplo:
+                 *
+                 * receita marcada como sujeita ao Fator R
+                 * +
+                 * regra fixa do Anexo IV
+                 *
+                 * deve falhar explicitamente.
+                 */
+                if (serviceTaxRule.isPresent()) {
+                        return classifier.classify(
+                                        revenue,
+                                        serviceTaxRule.orElseThrow());
+                }
+
                 if (revenue.subjectToFatorR()
                                 && context.fatorRResult().isPresent()) {
 
@@ -222,7 +270,9 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                         SimplesRevenueClassificationResult classification) {
                 SimplesCompetenceRevenueItemStatus status = classification
                                 .status() == SimplesRevenueClassificationStatus.REQUIRES_FATOR_R
+
                                                 ? SimplesCompetenceRevenueItemStatus.REQUIRES_FATOR_R
+
                                                 : SimplesCompetenceRevenueItemStatus.REQUIRES_CLASSIFICATION;
 
                 return new SimplesCompetenceRevenueItemResult(
@@ -237,6 +287,12 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                         SimplesRevenueTaxRoute route) {
                 return route == SimplesRevenueTaxRoute.ANNEX_I
                                 || route == SimplesRevenueTaxRoute.ANNEX_II;
+        }
+
+        private boolean isFatorRServiceRoute(
+                        SimplesRevenueTaxRoute route) {
+                return route == SimplesRevenueTaxRoute.ANNEX_III
+                                || route == SimplesRevenueTaxRoute.ANNEX_V;
         }
 
         private BigDecimal calculateProcessedTaxAmount(
@@ -318,8 +374,10 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                                         "A base de receita não pode ser negativa.");
                 }
 
-                if (competenceRevenue.totalAmount().compareTo(
-                                BigDecimal.ZERO) > 0
+                if (competenceRevenue
+                                .totalAmount()
+                                .compareTo(
+                                                BigDecimal.ZERO) > 0
                                 && revenueBasis.compareTo(
                                                 BigDecimal.ZERO) == 0) {
 
@@ -376,6 +434,8 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                                                 + context.revenueBasis()
                                                 + "; FatorR="
                                                 + fatorR
+                                                + "; RegrasServicoEspecificas="
+                                                + context.serviceTaxRules().size()
                                                 + "; QuantidadeReceitas="
                                                 + items.size(),
                                 "Processadas="
@@ -393,12 +453,6 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                                 "Lei Complementar nº 123/2006, art. 18; "
                                                 + "Resolução CGSN nº 140/2018, "
                                                 + "arts. 25 e 26.");
-        }
-
-        private boolean isServiceRoute(
-                        SimplesRevenueTaxRoute route) {
-                return route == SimplesRevenueTaxRoute.ANNEX_III
-                                || route == SimplesRevenueTaxRoute.ANNEX_V;
         }
 
         private SimplesCompetenceRevenueItemResult finalResult(
