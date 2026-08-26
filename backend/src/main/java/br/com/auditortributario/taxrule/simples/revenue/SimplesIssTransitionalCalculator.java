@@ -1,6 +1,5 @@
 package br.com.auditortributario.taxrule.simples.revenue;
 
-import br.com.auditortributario.taxrule.domain.TaxComponent;
 import br.com.auditortributario.taxrule.domain.TaxDecision;
 
 import java.math.BigDecimal;
@@ -8,7 +7,7 @@ import java.math.MathContext;
 import java.time.YearMonth;
 import java.util.Objects;
 
-public final class SimplesIcmsTransitionalCalculator {
+public final class SimplesIssTransitionalCalculator {
 
         private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
@@ -16,51 +15,41 @@ public final class SimplesIcmsTransitionalCalculator {
 
         private static final BigDecimal SUBLIMIT_3600000 = new BigDecimal("3600000.00");
 
-        private static final String RULE_CODE = "SIMPLES_ICMS_TRANSITIONAL_CALCULATION";
+        private static final BigDecimal ISS_MAXIMUM_EFFECTIVE_RATE = new BigDecimal("0.05");
+
+        private static final String RULE_CODE = "SIMPLES_ISS_TRANSITIONAL_CALCULATION";
 
         private static final String RULE_VERSION = "LC123-CGSN140-2018-2026";
 
-        private static final String LEGAL_REFERENCE = "Lei Complementar nº 123/2006, art. 18, "
-                        + "§§ 16, 16-A, 17 e 17-A; "
-                        + "Resolução CGSN nº 140/2018, art. 24.";
-
-        private final SimplesRevenueTaxBracketSelector bracketSelector;
-
-        private final SimplesRevenueTaxDistributionRegistry distributionRegistry;
-
-        public SimplesIcmsTransitionalCalculator() {
-                this.bracketSelector = new SimplesRevenueTaxBracketSelector();
-
-                this.distributionRegistry = new SimplesRevenueTaxDistributionRegistry();
-        }
+        private static final String LEGAL_REFERENCE = "Lei Complementar nº 123/2006, art. 18; "
+                        + "Resolução CGSN nº 140/2018, "
+                        + "arts. 21 e 24.";
 
         /*
-         * Mantido por compatibilidade com os testes e usos anteriores.
-         *
-         * Este overload representa corretamente o cenário em que existe
-         * somente uma receita segregada na competência.
+         * Compatibilidade com o cenário anterior de uma única
+         * receita segregada na competência.
          */
-        public SimplesIcmsTransitionalCalculationResult calculate(
+        public SimplesIssTransitionalCalculationResult calculate(
                         SimplesRevenueTaxRoute route,
                         BigDecimal annualSublimit,
-                        SimplesIcmsSublimitEffectResult icmsEffect,
+                        SimplesIssSublimitEffectResult issEffect,
                         SimplesSublimitMonthlyExcessResult monthlyExcess) {
                 return calculate(
                                 route,
                                 annualSublimit,
-                                icmsEffect,
+                                issEffect,
                                 monthlyExcess,
                                 monthlyExcess.monthlyRevenue());
         }
 
         /*
-         * Este é o método que deverá ser utilizado pelo consolidado
-         * quando houver múltiplas receitas segregadas.
+         * Método destinado ao processamento consolidado de
+         * múltiplas receitas segregadas.
          */
-        public SimplesIcmsTransitionalCalculationResult calculate(
+        public SimplesIssTransitionalCalculationResult calculate(
                         SimplesRevenueTaxRoute route,
                         BigDecimal annualSublimit,
-                        SimplesIcmsSublimitEffectResult icmsEffect,
+                        SimplesIssSublimitEffectResult issEffect,
                         SimplesSublimitMonthlyExcessResult monthlyExcess,
                         BigDecimal segregatedRevenueAmount) {
                 Objects.requireNonNull(
@@ -72,8 +61,8 @@ public final class SimplesIcmsTransitionalCalculator {
                                 "O sublimite anual não pode ser nulo.");
 
                 Objects.requireNonNull(
-                                icmsEffect,
-                                "O efeito do sublimite sobre o ICMS não pode ser nulo.");
+                                issEffect,
+                                "O efeito do sublimite sobre o ISS não pode ser nulo.");
 
                 Objects.requireNonNull(
                                 monthlyExcess,
@@ -90,94 +79,84 @@ public final class SimplesIcmsTransitionalCalculator {
                                 annualSublimit);
 
                 validateTransitionalState(
-                                icmsEffect);
+                                issEffect);
 
                 validateEvaluationCompatibility(
-                                icmsEffect,
+                                issEffect,
                                 monthlyExcess);
 
                 validateSegregatedRevenue(
                                 segregatedRevenueAmount,
                                 monthlyExcess);
 
-                YearMonth competence = icmsEffect.assessmentPeriod();
-
-                int referenceBracketNumber = determineReferenceBracketNumber(
-                                annualSublimit);
-
-                SimplesRevenueTaxBracket referenceBracket = bracketSelector.select(
+                IssReference reference = referenceFor(
                                 route,
-                                competence,
                                 annualSublimit);
-
-                if (referenceBracket.number() != referenceBracketNumber) {
-
-                        throw new IllegalStateException(
-                                        "A faixa encontrada para o sublimite anual "
-                                                        + "não corresponde à faixa legal "
-                                                        + "de referência do cálculo transitório.");
-                }
 
                 BigDecimal referenceEffectiveRate = calculateReferenceEffectiveRate(
                                 annualSublimit,
-                                referenceBracket);
+                                reference.nominalRate(),
+                                reference.deduction());
 
-                SimplesRevenueTaxDistributionRule distributionRule = distributionRegistry.find(
-                                route,
-                                referenceBracketNumber,
-                                competence);
-
-                BigDecimal icmsDistributionRate = findIcmsDistributionRate(
-                                distributionRule);
-
-                BigDecimal icmsEffectiveRate = referenceEffectiveRate.multiply(
-                                icmsDistributionRate,
+                BigDecimal rawIssEffectiveRate = referenceEffectiveRate.multiply(
+                                reference.issDistributionRate(),
                                 MATH_CONTEXT);
+
+                boolean limitedToFivePercent = rawIssEffectiveRate.compareTo(
+                                ISS_MAXIMUM_EFFECTIVE_RATE) > 0;
+
+                BigDecimal issEffectiveRate = limitedToFivePercent
+                                ? ISS_MAXIMUM_EFFECTIVE_RATE
+                                : rawIssEffectiveRate;
 
                 BigDecimal segregatedExcessRevenue = segregatedRevenueAmount.multiply(
                                 monthlyExcess.excessRatio(),
                                 MATH_CONTEXT);
 
-                BigDecimal icmsAmount = segregatedExcessRevenue.multiply(
-                                icmsEffectiveRate,
+                BigDecimal issAmount = segregatedExcessRevenue.multiply(
+                                issEffectiveRate,
                                 MATH_CONTEXT);
 
                 TaxDecision decision = createDecision(
                                 route,
-                                competence,
+                                issEffect.assessmentPeriod(),
                                 annualSublimit,
-                                referenceBracketNumber,
+                                reference,
                                 referenceEffectiveRate,
-                                icmsDistributionRate,
-                                icmsEffectiveRate,
+                                rawIssEffectiveRate,
+                                issEffectiveRate,
+                                limitedToFivePercent,
                                 monthlyExcess,
                                 segregatedRevenueAmount,
                                 segregatedExcessRevenue,
-                                icmsAmount);
+                                issAmount);
 
-                return new SimplesIcmsTransitionalCalculationResult(
+                return new SimplesIssTransitionalCalculationResult(
                                 route,
-                                competence,
+                                issEffect.assessmentPeriod(),
                                 annualSublimit,
-                                referenceBracketNumber,
+                                reference.bracketNumber(),
                                 referenceEffectiveRate,
-                                icmsDistributionRate,
-                                icmsEffectiveRate,
+                                reference.issDistributionRate(),
+                                rawIssEffectiveRate,
+                                issEffectiveRate,
+                                limitedToFivePercent,
                                 monthlyExcess,
                                 segregatedRevenueAmount,
                                 segregatedExcessRevenue,
-                                icmsAmount,
+                                issAmount,
                                 decision);
         }
 
         private void validateRoute(
                         SimplesRevenueTaxRoute route) {
-                if (route != SimplesRevenueTaxRoute.ANNEX_I
-                                && route != SimplesRevenueTaxRoute.ANNEX_II) {
+                if (route != SimplesRevenueTaxRoute.ANNEX_III
+                                && route != SimplesRevenueTaxRoute.ANNEX_IV
+                                && route != SimplesRevenueTaxRoute.ANNEX_V) {
 
                         throw new IllegalArgumentException(
-                                        "O cálculo transitório do ICMS suporta "
-                                                        + "somente os Anexos I e II.");
+                                        "O cálculo transitório do ISS suporta "
+                                                        + "somente os Anexos III, IV e V.");
                 }
         }
 
@@ -196,26 +175,26 @@ public final class SimplesIcmsTransitionalCalculator {
         }
 
         private void validateTransitionalState(
-                        SimplesIcmsSublimitEffectResult icmsEffect) {
-                if (!icmsEffect.requiresTransitionalCalculation()) {
+                        SimplesIssSublimitEffectResult issEffect) {
+                if (!issEffect.requiresTransitionalCalculation()) {
                         throw new IllegalArgumentException(
-                                        "O cálculo transitório do ICMS somente pode "
+                                        "O cálculo transitório do ISS somente pode "
                                                         + "ser executado quando o status for "
                                                         + "IN_DAS_TRANSITIONAL.");
                 }
         }
 
         private void validateEvaluationCompatibility(
-                        SimplesIcmsSublimitEffectResult icmsEffect,
+                        SimplesIssSublimitEffectResult issEffect,
                         SimplesSublimitMonthlyExcessResult monthlyExcess) {
-                SimplesSublimitEvaluationResult temporalEvaluation = icmsEffect
+                SimplesSublimitEvaluationResult temporalEvaluation = issEffect
                                 .temporalEffect()
                                 .evaluationResult();
 
                 if (!temporalEvaluation.equals(
                                 monthlyExcess.evaluationResult())) {
                         throw new IllegalArgumentException(
-                                        "O efeito temporal do ICMS e o excesso mensal "
+                                        "O efeito temporal do ISS e o excesso mensal "
                                                         + "devem pertencer à mesma avaliação "
                                                         + "de sublimite.");
                 }
@@ -238,74 +217,101 @@ public final class SimplesIcmsTransitionalCalculator {
                 }
         }
 
-        private int determineReferenceBracketNumber(
+        private IssReference referenceFor(
+                        SimplesRevenueTaxRoute route,
                         BigDecimal annualSublimit) {
-                if (annualSublimit.compareTo(
-                                SUBLIMIT_1800000) == 0) {
-                        return 4;
-                }
+                boolean lowerSublimit = annualSublimit.compareTo(
+                                SUBLIMIT_1800000) == 0;
 
-                return 5;
+                return switch (route) {
+
+                        case ANNEX_III ->
+                                lowerSublimit
+                                                ? new IssReference(
+                                                                4,
+                                                                new BigDecimal("0.1600"),
+                                                                new BigDecimal("35640.00"),
+                                                                new BigDecimal("0.3250"))
+                                                : new IssReference(
+                                                                5,
+                                                                new BigDecimal("0.2100"),
+                                                                new BigDecimal("125640.00"),
+                                                                new BigDecimal("0.3350"));
+
+                        case ANNEX_IV ->
+                                lowerSublimit
+                                                ? new IssReference(
+                                                                4,
+                                                                new BigDecimal("0.1400"),
+                                                                new BigDecimal("39780.00"),
+                                                                new BigDecimal("0.4000"))
+                                                : new IssReference(
+                                                                5,
+                                                                new BigDecimal("0.2200"),
+                                                                new BigDecimal("183780.00"),
+                                                                new BigDecimal("0.4000"));
+
+                        case ANNEX_V ->
+                                lowerSublimit
+                                                ? new IssReference(
+                                                                4,
+                                                                new BigDecimal("0.2050"),
+                                                                new BigDecimal("17100.00"),
+                                                                new BigDecimal("0.2100"))
+                                                : new IssReference(
+                                                                5,
+                                                                new BigDecimal("0.2300"),
+                                                                new BigDecimal("62100.00"),
+                                                                new BigDecimal("0.2350"));
+
+                        default ->
+                                throw new IllegalArgumentException(
+                                                "Rota sem referência transitória de ISS.");
+                };
         }
 
         private BigDecimal calculateReferenceEffectiveRate(
                         BigDecimal annualSublimit,
-                        SimplesRevenueTaxBracket referenceBracket) {
-                BigDecimal numerator = annualSublimit
+                        BigDecimal nominalRate,
+                        BigDecimal deduction) {
+                BigDecimal effectiveRate = annualSublimit
                                 .multiply(
-                                                referenceBracket.nominalRate(),
+                                                nominalRate,
                                                 MATH_CONTEXT)
                                 .subtract(
-                                                referenceBracket.deduction(),
+                                                deduction,
+                                                MATH_CONTEXT)
+                                .divide(
+                                                annualSublimit,
                                                 MATH_CONTEXT);
-
-                BigDecimal effectiveRate = numerator.divide(
-                                annualSublimit,
-                                MATH_CONTEXT);
 
                 if (effectiveRate.compareTo(
                                 BigDecimal.ZERO) < 0) {
                         throw new IllegalStateException(
                                         "A alíquota efetiva de referência "
-                                                        + "do ICMS não pode ser negativa.");
+                                                        + "do ISS não pode ser negativa.");
                 }
 
                 return effectiveRate;
-        }
-
-        private BigDecimal findIcmsDistributionRate(
-                        SimplesRevenueTaxDistributionRule distributionRule) {
-                return distributionRule
-                                .shares()
-                                .stream()
-                                .filter(
-                                                share -> share.component() == TaxComponent.ICMS)
-                                .map(
-                                                SimplesRevenueTaxDistributionRule.ComponentShare::distributionRate)
-                                .findFirst()
-                                .orElseThrow(
-                                                () -> new IllegalStateException(
-                                                                "A faixa tributária de referência "
-                                                                                + "não possui percentual "
-                                                                                + "de repartição para ICMS."));
         }
 
         private TaxDecision createDecision(
                         SimplesRevenueTaxRoute route,
                         YearMonth competence,
                         BigDecimal annualSublimit,
-                        int referenceBracketNumber,
+                        IssReference reference,
                         BigDecimal referenceEffectiveRate,
-                        BigDecimal icmsDistributionRate,
-                        BigDecimal icmsEffectiveRate,
+                        BigDecimal rawIssEffectiveRate,
+                        BigDecimal issEffectiveRate,
+                        boolean limitedToFivePercent,
                         SimplesSublimitMonthlyExcessResult monthlyExcess,
                         BigDecimal segregatedRevenueAmount,
                         BigDecimal segregatedExcessRevenue,
-                        BigDecimal icmsAmount) {
+                        BigDecimal issAmount) {
                 return new TaxDecision(
                                 RULE_CODE,
                                 RULE_VERSION,
-                                "Cálculo transitório do ICMS incidente "
+                                "Cálculo transitório do ISS incidente "
                                                 + "sobre a parcela da receita segregada "
                                                 + "que corresponde ao excesso do sublimite.",
                                 "Competencia="
@@ -327,15 +333,28 @@ public final class SimplesIcmsTransitionalCalculator {
                                                 + "; ReceitaSegregadaExcedente="
                                                 + segregatedExcessRevenue.toPlainString()
                                                 + "; FaixaReferencia="
-                                                + referenceBracketNumber
+                                                + reference.bracketNumber()
                                                 + "; AliquotaEfetivaReferencia="
                                                 + referenceEffectiveRate.toPlainString()
-                                                + "; PercentualReparticaoICMS="
-                                                + icmsDistributionRate.toPlainString(),
-                                "PercentualEfetivoICMS="
-                                                + icmsEffectiveRate.toPlainString()
-                                                + "; ValorICMS="
-                                                + icmsAmount.toPlainString(),
+                                                + "; PercentualReparticaoISS="
+                                                + reference
+                                                                .issDistributionRate()
+                                                                .toPlainString(),
+                                "PercentualISSBruto="
+                                                + rawIssEffectiveRate.toPlainString()
+                                                + "; PercentualISSAplicado="
+                                                + issEffectiveRate.toPlainString()
+                                                + "; LimitadoCincoPorCento="
+                                                + limitedToFivePercent
+                                                + "; ValorISS="
+                                                + issAmount.toPlainString(),
                                 LEGAL_REFERENCE);
+        }
+
+        private record IssReference(
+                        int bracketNumber,
+                        BigDecimal nominalRate,
+                        BigDecimal deduction,
+                        BigDecimal issDistributionRate) {
         }
 }

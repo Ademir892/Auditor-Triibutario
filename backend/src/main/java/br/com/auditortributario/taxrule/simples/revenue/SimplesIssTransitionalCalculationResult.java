@@ -7,21 +7,23 @@ import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.util.Objects;
 
-public record SimplesIcmsTransitionalCalculationResult(
+public record SimplesIssTransitionalCalculationResult(
                 SimplesRevenueTaxRoute route,
                 YearMonth competence,
                 BigDecimal annualSublimit,
                 int referenceBracketNumber,
                 BigDecimal referenceEffectiveRate,
-                BigDecimal icmsDistributionRate,
-                BigDecimal icmsEffectiveRate,
+                BigDecimal issDistributionRate,
+                BigDecimal rawIssEffectiveRate,
+                BigDecimal issEffectiveRate,
+                boolean limitedToFivePercent,
                 SimplesSublimitMonthlyExcessResult monthlyExcess,
                 BigDecimal segregatedRevenueAmount,
                 BigDecimal segregatedExcessRevenue,
-                BigDecimal icmsAmount,
+                BigDecimal issAmount,
                 TaxDecision decision) {
 
-        public SimplesIcmsTransitionalCalculationResult {
+        public SimplesIssTransitionalCalculationResult {
                 Objects.requireNonNull(
                                 route,
                                 "A rota tributária não pode ser nula.");
@@ -39,12 +41,16 @@ public record SimplesIcmsTransitionalCalculationResult(
                                 "A alíquota efetiva de referência não pode ser nula.");
 
                 Objects.requireNonNull(
-                                icmsDistributionRate,
-                                "O percentual de repartição do ICMS não pode ser nulo.");
+                                issDistributionRate,
+                                "O percentual de repartição do ISS não pode ser nulo.");
 
                 Objects.requireNonNull(
-                                icmsEffectiveRate,
-                                "O percentual efetivo do ICMS não pode ser nulo.");
+                                rawIssEffectiveRate,
+                                "O percentual bruto do ISS não pode ser nulo.");
+
+                Objects.requireNonNull(
+                                issEffectiveRate,
+                                "O percentual efetivo do ISS não pode ser nulo.");
 
                 Objects.requireNonNull(
                                 monthlyExcess,
@@ -59,56 +65,26 @@ public record SimplesIcmsTransitionalCalculationResult(
                                 "A parcela excedente da receita segregada não pode ser nula.");
 
                 Objects.requireNonNull(
-                                icmsAmount,
-                                "O valor do ICMS não pode ser nulo.");
+                                issAmount,
+                                "O valor do ISS não pode ser nulo.");
 
                 Objects.requireNonNull(
                                 decision,
                                 "A decisão tributária não pode ser nula.");
 
-                if (route != SimplesRevenueTaxRoute.ANNEX_I
-                                && route != SimplesRevenueTaxRoute.ANNEX_II) {
+                if (route != SimplesRevenueTaxRoute.ANNEX_III
+                                && route != SimplesRevenueTaxRoute.ANNEX_IV
+                                && route != SimplesRevenueTaxRoute.ANNEX_V) {
 
                         throw new IllegalArgumentException(
-                                        "O cálculo transitório do ICMS suporta "
-                                                        + "somente os Anexos I e II.");
+                                        "O cálculo transitório do ISS suporta "
+                                                        + "somente os Anexos III, IV e V.");
                 }
 
                 if (annualSublimit.compareTo(
                                 BigDecimal.ZERO) <= 0) {
                         throw new IllegalArgumentException(
                                         "O sublimite anual deve ser maior que zero.");
-                }
-
-                if (referenceBracketNumber < 1
-                                || referenceBracketNumber > 6) {
-
-                        throw new IllegalArgumentException(
-                                        "A faixa de referência deve estar entre 1 e 6.");
-                }
-
-                if (referenceEffectiveRate.compareTo(
-                                BigDecimal.ZERO) < 0) {
-                        throw new IllegalArgumentException(
-                                        "A alíquota efetiva de referência "
-                                                        + "não pode ser negativa.");
-                }
-
-                if (icmsDistributionRate.compareTo(
-                                BigDecimal.ZERO) < 0
-                                || icmsDistributionRate.compareTo(
-                                                BigDecimal.ONE) > 0) {
-
-                        throw new IllegalArgumentException(
-                                        "O percentual de repartição do ICMS "
-                                                        + "deve estar entre zero e um.");
-                }
-
-                if (icmsEffectiveRate.compareTo(
-                                BigDecimal.ZERO) < 0) {
-                        throw new IllegalArgumentException(
-                                        "O percentual efetivo do ICMS "
-                                                        + "não pode ser negativo.");
                 }
 
                 if (segregatedRevenueAmount.compareTo(
@@ -145,10 +121,17 @@ public record SimplesIcmsTransitionalCalculationResult(
                                                         + "não pode superar o excesso mensal total.");
                 }
 
-                if (icmsAmount.compareTo(
+                if (issEffectiveRate.compareTo(
+                                new BigDecimal("0.05")) > 0) {
+                        throw new IllegalArgumentException(
+                                        "O percentual efetivo do ISS "
+                                                        + "não pode superar 5%.");
+                }
+
+                if (issAmount.compareTo(
                                 BigDecimal.ZERO) < 0) {
                         throw new IllegalArgumentException(
-                                        "O valor do ICMS não pode ser negativo.");
+                                        "O valor do ISS não pode ser negativo.");
                 }
         }
 
@@ -158,14 +141,14 @@ public record SimplesIcmsTransitionalCalculationResult(
                                 RoundingMode.HALF_UP);
         }
 
-        public BigDecimal icmsAmountForDisplay() {
-                return icmsAmount.setScale(
+        public BigDecimal issAmountForDisplay() {
+                return issAmount.setScale(
                                 2,
                                 RoundingMode.HALF_UP);
         }
 
-        public BigDecimal icmsEffectivePercentageForDisplay() {
-                return icmsEffectiveRate
+        public BigDecimal issEffectivePercentageForDisplay() {
+                return issEffectiveRate
                                 .multiply(
                                                 new BigDecimal("100"))
                                 .setScale(
