@@ -10,6 +10,7 @@ import br.com.auditortributario.taxrule.domain.revenue.RevenueTaxTreatment;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
@@ -275,6 +276,70 @@ class SimplesCompetenceRevenueTaxProcessorTest {
                 result
                         .finalTaxAmountForDisplay()
                         .orElseThrow());
+    }
+
+    @Test
+    void shouldApplyOutsideDasSublimitToEachEligibleRevenue() {
+        CompetenceRevenue competenceRevenue = new CompetenceRevenue(
+                COMPETENCE,
+                List.of(
+                        revenue(
+                                "10000.00",
+                                RevenueActivityType.COMMERCE,
+                                Set.of(),
+                                "Comércio acima do sublimite")));
+
+        SimplesCompetenceTaxContext context = SimplesCompetenceTaxContext
+                .withoutFatorR(new BigDecimal("300000.00"))
+                .withSublimitTaxContext(SimplesSublimitTaxContext.outsideDas());
+
+        SimplesCompetenceRevenueTaxResult result = processor.process(
+                competenceRevenue,
+                context);
+
+        assertEquals(SimplesCompetenceRevenueProcessingStatus.COMPLETED, result.status());
+        assertTrue(result.hasExternalObligations());
+        assertEquals(SimplesCompetenceRevenueItemStatus.COMPLETED_WITH_EXTERNAL_OBLIGATION,
+                result.items().getFirst().status());
+        assertTrue(result.items().getFirst().taxResult().orElseThrow()
+                instanceof SimplesSublimitAdjustedRevenueTaxResult);
+        assertEquals(new BigDecimal("351.12"), result.finalTaxAmountForDisplay().orElseThrow());
+        assertEquals(BigDecimal.ZERO.setScale(2), result.findComponent(TaxComponent.ICMS).orElseThrow().amountForDisplay());
+    }
+
+    @Test
+    void shouldApplyTransitionalSublimitDuringCompetenceProcessing() {
+        SimplesSublimitEvaluationResult evaluation = new SimplesSublimitEvaluator().evaluate(
+                new BigDecimal("3700000.00"), new BigDecimal("3600000.00"));
+        SimplesSublimitMonthlyExcessResult monthlyExcess = new SimplesSublimitMonthlyExcessCalculator().calculate(
+                evaluation, new BigDecimal("200000.00"));
+        SimplesSublimitTemporalEffectResult temporalEffect = new SimplesSublimitTemporalEffectCalculator().calculate(
+                evaluation, LocalDate.of(2020, 1, 1), COMPETENCE);
+        SimplesIcmsSublimitEffectResult icmsEffect = new SimplesIcmsSublimitEffectCalculator().calculate(
+                temporalEffect, COMPETENCE);
+        SimplesIssSublimitEffectResult issEffect = new SimplesIssSublimitEffectCalculator().calculate(
+                temporalEffect, COMPETENCE);
+
+        SimplesCompetenceTaxContext context = SimplesCompetenceTaxContext
+                .withoutFatorR(new BigDecimal("300000.00"))
+                .withSublimitTaxContext(SimplesSublimitTaxContext.transitional(
+                        evaluation, monthlyExcess, icmsEffect, issEffect));
+
+        SimplesCompetenceRevenueTaxResult result = processor.process(
+                new CompetenceRevenue(COMPETENCE, List.of(
+                        revenue("120000.00", RevenueActivityType.COMMERCE, Set.of(), "Comércio transitório"))),
+                context);
+
+        SimplesRevenueTaxProcessingResult taxResult = result.items().getFirst().taxResult().orElseThrow();
+        SimplesAdjustedTaxComponent icms = taxResult.adjustedComponents().stream()
+                .filter(component -> component.component() == TaxComponent.ICMS)
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(taxResult instanceof SimplesSublimitAdjustedRevenueTaxResult);
+        assertEquals(1, icms.appliedTreatments().size());
+        assertEquals(0, new BigDecimal("0.5").compareTo(
+                monthlyExcess.excessRatio()));
     }
 
     @Test

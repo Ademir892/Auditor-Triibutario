@@ -25,6 +25,12 @@ public final class SimplesCompetenceRevenueTaxProcessor {
 
         private final SimplesAnnexIVRevenueTaxProcessor annexIVProcessor;
 
+        private final SimplesSublimitRevenueTaxAdjuster sublimitAdjuster;
+
+        private final SimplesIcmsTransitionalCalculator icmsTransitionalCalculator;
+
+        private final SimplesIssTransitionalCalculator issTransitionalCalculator;
+
         public SimplesCompetenceRevenueTaxProcessor() {
                 this.classifier = new SimplesRevenueClassifier();
 
@@ -33,6 +39,12 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                 this.serviceProcessor = new SimplesServiceRevenueTaxProcessor();
 
                 this.annexIVProcessor = new SimplesAnnexIVRevenueTaxProcessor();
+
+                this.sublimitAdjuster = new SimplesSublimitRevenueTaxAdjuster();
+
+                this.icmsTransitionalCalculator = new SimplesIcmsTransitionalCalculator();
+
+                this.issTransitionalCalculator = new SimplesIssTransitionalCalculator();
         }
 
         public SimplesCompetenceRevenueTaxResult process(
@@ -150,7 +162,9 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                         return finalResult(
                                         revenue,
                                         classification,
-                                        taxResult);
+                                        applySublimitTaxTreatment(
+                                                        taxResult,
+                                                        context));
                 }
 
                 if (route == SimplesRevenueTaxRoute.ANNEX_IV) {
@@ -172,7 +186,9 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                         return finalResult(
                                         revenue,
                                         classification,
-                                        taxResult);
+                                        applySublimitTaxTreatment(
+                                                        taxResult,
+                                                        context));
                 }
 
                 if (isFatorRServiceRoute(
@@ -211,7 +227,9 @@ public final class SimplesCompetenceRevenueTaxProcessor {
                         return finalResult(
                                         revenue,
                                         classification,
-                                        taxResult);
+                                        applySublimitTaxTreatment(
+                                                        taxResult,
+                                                        context));
                 }
 
                 return new SimplesCompetenceRevenueItemResult(
@@ -263,6 +281,63 @@ public final class SimplesCompetenceRevenueTaxProcessor {
 
                 return classifier.classify(
                                 revenue);
+        }
+
+        private SimplesRevenueTaxProcessingResult applySublimitTaxTreatment(
+                        SimplesRevenueTaxProcessingResult taxResult,
+                        SimplesCompetenceTaxContext context) {
+                if (context.sublimitTaxContext().isEmpty()) {
+                        return taxResult;
+                }
+
+                SimplesSublimitTaxContext sublimitContext = context
+                                .sublimitTaxContext()
+                                .orElseThrow();
+
+                if (sublimitContext.treatment() != SimplesSublimitTaxTreatment.IN_DAS_TRANSITIONAL) {
+                        return sublimitAdjuster.adjust(
+                                        taxResult,
+                                        sublimitContext);
+                }
+
+                if (!sublimitContext.hasCompleteTransitionalData()) {
+                        throw new IllegalStateException(
+                                        "O processamento transitório do sublimite exige "
+                                                        + "excesso mensal e efeitos de ICMS/ISS.");
+                }
+
+                SimplesRevenueTaxRoute route = taxResult
+                                .classification()
+                                .route()
+                                .orElseThrow();
+
+                if (isGoodsRoute(route)) {
+                        SimplesIcmsTransitionalCalculationResult calculation = icmsTransitionalCalculator.calculate(
+                                        route,
+                                        sublimitContext.evaluation().orElseThrow().sublimit(),
+                                        sublimitContext.icmsEffect().orElseThrow(),
+                                        sublimitContext.monthlyExcess().orElseThrow(),
+                                        taxResult.revenue().amount());
+
+                        return sublimitAdjuster.adjust(
+                                        taxResult,
+                                        sublimitContext,
+                                        Optional.of(calculation),
+                                        Optional.empty());
+                }
+
+                SimplesIssTransitionalCalculationResult calculation = issTransitionalCalculator.calculate(
+                                route,
+                                sublimitContext.evaluation().orElseThrow().sublimit(),
+                                sublimitContext.issEffect().orElseThrow(),
+                                sublimitContext.monthlyExcess().orElseThrow(),
+                                taxResult.revenue().amount());
+
+                return sublimitAdjuster.adjust(
+                                taxResult,
+                                sublimitContext,
+                                Optional.empty(),
+                                Optional.of(calculation));
         }
 
         private SimplesCompetenceRevenueItemResult pendingClassification(

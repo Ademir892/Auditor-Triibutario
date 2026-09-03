@@ -34,7 +34,10 @@ public enum RevenueTaxTreatment {
                         "Redução tributária"),
 
         ISS_WITHHELD(
-                        "ISS retido");
+                        "ISS retido"),
+
+        SIMPLIFIED_REGIME_SUBLIMIT(
+                        "Sublimite do Simples Nacional");
 
         private final String displayName;
 

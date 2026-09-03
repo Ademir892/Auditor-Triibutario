@@ -15,7 +15,8 @@ public record SimplesCompetenceTaxContext(
                 BigDecimal revenueBasis,
                 Optional<FatorRCalculationResult> fatorRResult,
                 Optional<TaxBracketRevenueBasisResult> revenueBasisResult,
-                Map<RevenueEntryId, SimplesServiceTaxRule> serviceTaxRules) {
+                Map<RevenueEntryId, SimplesServiceTaxRule> serviceTaxRules,
+                Optional<SimplesSublimitTaxContext> sublimitTaxContext) {
 
         public SimplesCompetenceTaxContext(
                         BigDecimal revenueBasis,
@@ -25,7 +26,16 @@ public record SimplesCompetenceTaxContext(
                                 revenueBasis,
                                 fatorRResult,
                                 revenueBasisResult,
-                                Map.of());
+                                Map.of(),
+                                Optional.empty());
+        }
+
+        public SimplesCompetenceTaxContext(
+                        BigDecimal revenueBasis,
+                        Optional<FatorRCalculationResult> fatorRResult,
+                        Optional<TaxBracketRevenueBasisResult> revenueBasisResult,
+                        Map<RevenueEntryId, SimplesServiceTaxRule> serviceTaxRules) {
+                this(revenueBasis, fatorRResult, revenueBasisResult, serviceTaxRules, Optional.empty());
         }
 
         public SimplesCompetenceTaxContext {
@@ -46,6 +56,8 @@ public record SimplesCompetenceTaxContext(
                                 serviceTaxRules,
                                 "As regras tributárias específicas dos serviços "
                                                 + "não podem ser nulas.");
+
+                Objects.requireNonNull(sublimitTaxContext, "O contexto opcional do sublimite não pode ser nulo.");
 
                 if (revenueBasis.compareTo(
                                 BigDecimal.ZERO) < 0) {
@@ -76,7 +88,8 @@ public record SimplesCompetenceTaxContext(
                                 revenueBasis,
                                 Optional.empty(),
                                 Optional.empty(),
-                                Map.of());
+                                Map.of(),
+                                Optional.empty());
         }
 
         public static SimplesCompetenceTaxContext withFatorR(
@@ -91,7 +104,8 @@ public record SimplesCompetenceTaxContext(
                                 Optional.of(
                                                 fatorRResult),
                                 Optional.empty(),
-                                Map.of());
+                                Map.of(),
+                                Optional.empty());
         }
 
         public static SimplesCompetenceTaxContext withServiceTaxData(
@@ -112,7 +126,8 @@ public record SimplesCompetenceTaxContext(
                                                 fatorRResult),
                                 Optional.of(
                                                 revenueBasisResult),
-                                Map.of());
+                                Map.of(),
+                                Optional.empty());
         }
 
         public SimplesCompetenceTaxContext withServiceTaxRule(
@@ -137,7 +152,20 @@ public record SimplesCompetenceTaxContext(
                                 revenueBasis,
                                 fatorRResult,
                                 revenueBasisResult,
-                                updatedRules);
+                                updatedRules,
+                                sublimitTaxContext);
+        }
+
+        public SimplesCompetenceTaxContext withSublimitTaxContext(
+                        SimplesSublimitTaxContext sublimitTaxContext) {
+                return new SimplesCompetenceTaxContext(
+                                revenueBasis,
+                                fatorRResult,
+                                revenueBasisResult,
+                                serviceTaxRules,
+                                Optional.of(Objects.requireNonNull(
+                                                sublimitTaxContext,
+                                                "O contexto do sublimite não pode ser nulo.")));
         }
 
         public Optional<SimplesServiceTaxRule> serviceTaxRuleFor(
@@ -168,5 +196,9 @@ public record SimplesCompetenceTaxContext(
                         RevenueEntry revenue) {
                 return serviceTaxRuleFor(
                                 revenue).isPresent();
+        }
+
+        public boolean hasSublimitTaxContext() {
+                return sublimitTaxContext.isPresent();
         }
 }

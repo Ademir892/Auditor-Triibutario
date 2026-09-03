@@ -139,8 +139,62 @@ public final class SimplesRevenueTaxAllocationCalculator {
                                                         componentAmount));
                 }
 
+                reconcileTotalAllocation(
+                                allocations,
+                                revenueAmount,
+                                totalEffectiveRate);
+
                 return List.copyOf(
                                 allocations);
+        }
+
+        /*
+         * O total do tributo é calculado em uma única operação, enquanto
+         * cada componente é calculado individualmente. Mesmo com percentuais
+         * que totalizam 100%, as duas sequências podem divergir em casas
+         * decimais remanescentes do DECIMAL128. A diferença é atribuída ao
+         * último componente para preservar, simultaneamente, a composição
+         * integral e o valor bruto do cálculo.
+         */
+        private void reconcileTotalAllocation(
+                        List<TaxComponentAllocation> allocations,
+                        BigDecimal revenueAmount,
+                        BigDecimal totalEffectiveRate) {
+                BigDecimal expectedTotal = revenueAmount.multiply(
+                                totalEffectiveRate,
+                                MATH_CONTEXT);
+
+                BigDecimal allocatedTotal = allocations.stream()
+                                .map(TaxComponentAllocation::amount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                BigDecimal difference = expectedTotal.subtract(
+                                allocatedTotal);
+
+                if (difference.signum() == 0) {
+                        return;
+                }
+
+                int lastIndex = allocations.size() - 1;
+                TaxComponentAllocation lastAllocation = allocations.get(
+                                lastIndex);
+
+                BigDecimal reconciledAmount = lastAllocation.amount().add(
+                                difference);
+
+                BigDecimal reconciledEffectiveRate = revenueAmount.signum() == 0
+                                ? BigDecimal.ZERO
+                                : reconciledAmount.divide(
+                                                revenueAmount,
+                                                MATH_CONTEXT);
+
+                allocations.set(
+                                lastIndex,
+                                new TaxComponentAllocation(
+                                                lastAllocation.component(),
+                                                lastAllocation.distributionRate(),
+                                                reconciledEffectiveRate,
+                                                reconciledAmount));
         }
 
         private List<TaxComponentAllocation> createAnnexIVCappedAllocations(

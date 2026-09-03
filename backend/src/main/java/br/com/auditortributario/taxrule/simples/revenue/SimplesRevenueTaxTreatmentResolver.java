@@ -79,6 +79,12 @@ public final class SimplesRevenueTaxTreatmentResolver {
                                                                                         + "desconsiderado desta receita "
                                                                                         + "no cálculo do Simples Nacional."));
 
+                                case SIMPLIFIED_REGIME_SUBLIMIT ->
+                                        throw new IllegalArgumentException(
+                                                        "O sublimite do Simples Nacional deve ser "
+                                                                        + "aplicado pelo contexto da competência, "
+                                                                        + "não diretamente na receita.");
+
                                 case REDUCTION ->
                                         results.addAll(
                                                         reductionTreatments(

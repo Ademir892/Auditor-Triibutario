@@ -2,6 +2,7 @@ package br.com.auditortributario.taxrule.simples.revenue;
 
 import br.com.auditortributario.taxrule.domain.TaxComponent;
 import br.com.auditortributario.taxrule.domain.TaxComponentAllocation;
+import br.com.auditortributario.taxrule.domain.TaxCompositionResult;
 
 import org.junit.jupiter.api.Test;
 
@@ -155,6 +156,43 @@ class SimplesRevenueTaxAllocationCalculatorTest {
                         .setScale(
                                 2,
                                 RoundingMode.HALF_UP));
+    }
+
+    @Test
+    void shouldFullyAllocateAnnexIFourthBracketWithoutPrecisionRemainder() {
+        assertFullyAllocated(
+                SimplesRevenueTaxRoute.ANNEX_I,
+                4,
+                new BigDecimal("1700000.00"),
+                new BigDecimal("0.1075882352941176470588235294117647"));
+    }
+
+    @Test
+    void shouldFullyAllocateAnnexIFifthBracketWithoutPrecisionRemainder() {
+        assertFullyAllocated(
+                SimplesRevenueTaxRoute.ANNEX_I,
+                5,
+                new BigDecimal("3500000.00"),
+                new BigDecimal("0.1128"));
+    }
+
+    private void assertFullyAllocated(
+            SimplesRevenueTaxRoute route,
+            int bracket,
+            BigDecimal revenue,
+            BigDecimal effectiveRate) {
+        List<TaxComponentAllocation> allocations = calculator.calculate(
+                route,
+                bracket,
+                COMPETENCE,
+                revenue,
+                effectiveRate);
+
+        TaxCompositionResult composition = new TaxCompositionResult(
+                revenue.multiply(effectiveRate, java.math.MathContext.DECIMAL128),
+                allocations);
+
+        assertEquals(0, composition.unallocatedAmount().compareTo(BigDecimal.ZERO));
     }
 
     private void assertAmount(
